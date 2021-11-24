@@ -1,5 +1,6 @@
-invoke
 nbformat
 nbdev
+jupyter
 fastcore
+fastprogress
 nbconvert
