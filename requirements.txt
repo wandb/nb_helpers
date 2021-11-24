@@ -1,6 +1,5 @@
-nbformat
+rich
 nbdev
-jupyter
+
 fastcore
 fastprogress
-nbconvert
