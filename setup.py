@@ -9,7 +9,7 @@ setuptools.setup(
     name = 'nb_helpers', 
     packages = setuptools.find_packages(),
     include_package_data = True,
-    install_requires = ['nbdev', 'rich', 'fastcore', 'fastprogress'],
+    install_requires = ['rich', 'fastcore', 'fastprogress'],
     python_requires  = '>=' + '3.7',
     long_description = open('README.md').read(),
     long_description_content_type = 'text/markdown',
