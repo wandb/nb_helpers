@@ -12,8 +12,8 @@ from nb_helpers.utils import print_output, is_nb, find_nbs
 
 def create_table():
     table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("nb name", style="dim")
-    table.add_column("status")
+    table.add_column("Notebook Path", style="dim")
+    table.add_column("Status")
     return table
 
 CONSOLE = Console()
