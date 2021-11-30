@@ -8,15 +8,28 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.7'
-    - name: Install the library
+    - name: Install dev library
       run: |
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
         pip install -e .
+
+    - name: Code Quality -> Black
+      run: black .
     - name: Run unit tests
       run: |
         coverage run -m pytest
         coverage report -m
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+    - name: Install the library
+      run: |
+        pip install -r requirements.txt
+        pip install -e .
     - name: Check if all notebooks are cleaned
       run: |
         echo "Check we are starting with clean git checkout"
@@ -25,7 +38,7 @@ jobs:
         clean_nbs
         echo "Check that strip out was unnecessary"
         git status -s # display the status to see which nbs need cleaning up
-        if [ -n "$(git status -uno -s)" ]; then echo -e "!!! Detected unstripped out notebooks\n!!!Remember to run nbdev_install_git_hooks"; false; fi
+        if [ -n "$(git status -uno -s)" ]; then echo -e "!!! Detected unstripped out notebooks\n!!!Remember to run install_git_hooks"; false; fi
     # - name: Run tests
     #   run: |
     #     nbdev_test_nbs
