@@ -1,3 +1,5 @@
+![CI](https://github.com/wandb/nb_helpers/workflows/CI/badge.svg)
+
 # nb_helpers
 
 A simple tool to clean up notebooks from your repo
