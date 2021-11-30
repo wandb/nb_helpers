@@ -35,14 +35,14 @@ def read_nb(fname):
         return nbformat.reads(f.read(), as_version=4)
 
 
-def run_one(fname, verbose=False):
+def run_one(fname, verbose=False, timeout=600):
     "Run nb `fname` and timeit, recover exception"
     print(f"testing {fname}")
     start = time.time()
     did_run = False
     try:
         notebook = read_nb(fname)
-        processor = ExecutePreprocessor(timeout=600, kernel_name="python3")
+        processor = ExecutePreprocessor(timeout=timeout, kernel_name="python3")
         pnb = nbformat.from_dict(notebook)
         processor.preprocess(pnb)
         did_run = True
@@ -56,7 +56,7 @@ def run_one(fname, verbose=False):
         str(fname),
         "[green]Ok[/green]:heavy_check_mark:" if did_run else "[red]Fail[/red]",
         f"{int(time.time() - start)} s",
-        f"[u blue]https://colab.research.google.com/{GITHUB_REPO}/{fname}[\blue u]",
+        f"[blue u link=https://colab.research.google.com/{GITHUB_REPO}/{fname}]open in colab[/blue u link]",
     )
     # CONSOLE.print(f'open in colab', style=f'link "https://colab.research.google.com/{GITHUB_REPO}/{fname}"')
     return did_run, time.time() - start
@@ -66,12 +66,13 @@ def run_one(fname, verbose=False):
 def test_nbs(
     path: Param("A notebook name or glob to convert", str) = ".",
     verbose: Param("Print errors along the way", store_true) = False,
+    timeout: Param("Max runtime for each notebook, in seconds", int) = 600,
     timing: Param("Timing each notebook to see the ones are slow", store_true) = False,
 ):
     files = find_nbs(Path(path))
     results = []
     for nb in files:
-        results.append(run_one(nb, verbose=verbose))
+        results.append(run_one(nb, verbose=verbose, timeout=timeout))
         time.sleep(0.5)
     _, times = [r[0] for r in results], [r[1] for r in results]
     CONSOLE.print(RUN_TABLE)
