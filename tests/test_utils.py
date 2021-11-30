@@ -14,5 +14,5 @@ def test_is_nb():
 
 def test_find_nbs():
     valid_nbs = [f.name for f in find_nbs(TEST_PATH)]
-    assert len(valid_nbs) == 2
+    assert len(valid_nbs) == 4
     assert ("test_nb.ipynb" in valid_nbs) and ("test_nb2.ipynb" in valid_nbs)
