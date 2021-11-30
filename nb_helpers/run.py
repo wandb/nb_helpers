@@ -1,5 +1,3 @@
-from ast import Param
-import glob
 import time
 from pathlib import Path
 
@@ -8,10 +6,9 @@ from rich import print
 from rich.console import Console
 from rich.table import Table
 import nbformat
-from fastcore.basics import num_cpus
-from nbconvert.preprocessors import ExecutePreprocessor
 
 from nb_helpers.utils import find_nbs
+from nb_helpers.nbdev_test import NoExportPreprocessor, get_all_flags
 
 
 def _create_table():
@@ -35,14 +32,24 @@ def read_nb(fname):
         return nbformat.reads(f.read(), as_version=4)
 
 
-def run_one(fname, verbose=False, timeout=600):
+def run_one(fname, verbose=False, timeout=600, flags=None):
     "Run nb `fname` and timeit, recover exception"
-    print(f"testing {fname}")
     start = time.time()
     did_run = False
+    if flags is None:
+        flags = []
     try:
         notebook = read_nb(fname)
-        processor = ExecutePreprocessor(timeout=timeout, kernel_name="python3")
+        for f in get_all_flags(notebook["cells"]):
+            if f not in flags:
+                RUN_TABLE.add_row(
+                    str(fname),
+                    "[green]Skipped[/green]:heavy_check_mark:",
+                    f"{int(time.time() - start)} s",
+                    f"[blue u link=https://colab.research.google.com/{GITHUB_REPO}/{fname}]open in colab[/blue u link]",
+                )
+                return did_run, time.time() - start
+        processor = NoExportPreprocessor(flags, timeout=timeout, kernel_name="python3")
         pnb = nbformat.from_dict(notebook)
         processor.preprocess(pnb)
         did_run = True
@@ -66,13 +73,14 @@ def run_one(fname, verbose=False, timeout=600):
 def test_nbs(
     path: Param("A notebook name or glob to convert", str) = ".",
     verbose: Param("Print errors along the way", store_true) = False,
+    flags: Param("Space separated list of flags", str) = None,
     timeout: Param("Max runtime for each notebook, in seconds", int) = 600,
     timing: Param("Timing each notebook to see the ones are slow", store_true) = False,
 ):
     files = find_nbs(Path(path))
     results = []
     for nb in files:
-        results.append(run_one(nb, verbose=verbose, timeout=timeout))
+        results.append(run_one(nb, verbose=verbose, timeout=timeout, flags=flags))
         time.sleep(0.5)
     _, times = [r[0] for r in results], [r[1] for r in results]
     CONSOLE.print(RUN_TABLE)
