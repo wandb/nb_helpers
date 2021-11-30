@@ -32,11 +32,12 @@ def run_one(fname, verbose=True):
             print(f"\nError in executing {fname}\n{e}")
         return False, time.time() - start
 
+
 @call_parse
 def test_nbs(
-    path:   Param("A notebook name or glob to convert", str) = '.', 
-    verbose: Param("Print errors along the way", store_true) = False, 
-    timing:  Param("Timing each notebook to see the ones are slow", store_true) = False,
+    path: Param("A notebook name or glob to convert", str) = ".",
+    verbose: Param("Print errors along the way", store_true) = False,
+    timing: Param("Timing each notebook to see the ones are slow", store_true) = False,
 ):
     files = find_nbs(Path(path))
     results = []

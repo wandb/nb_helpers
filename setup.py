@@ -13,8 +13,10 @@ setuptools.setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     zip_safe=False,
-    entry_points={"console_scripts": [
-        "clean_nbs=nb_helpers.clean:clean_nbs",
-        "test_nbs=nb_helpers.run:test_nbs"
-        ]},
+    entry_points={
+        "console_scripts": [
+            "clean_nbs=nb_helpers.clean:clean_nbs",
+            "test_nbs=nb_helpers.run:test_nbs",
+        ]
+    },
 )
