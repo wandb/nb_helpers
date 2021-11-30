@@ -31,3 +31,8 @@ clean_nbs
 The main idea of this repo, is to strip out notebooks from `wandb/examples`. 
 
 - TODO: test notebooks, as this cannot be done on github runners.
+
+```bash
+test_nbs --path examples/colabs --timeout 600
+```
+will run all notebooks inside `examples/colabs` for at most 600 seconds each.

@@ -47,7 +47,7 @@ def clean_all(path: Path, clear_outs=True, disp=False):
     for nb in progress_bar(find_nbs(path), leave=False):
         try:
             clean_one(nb, clear_outs, disp)
-            CLEAN_TABLE.add_row(str(nb), "[green]Ok[/green]")
+            CLEAN_TABLE.add_row(str(nb), "[green]Ok[/green]:heavy_check_mark:")
         except:
             CLEAN_TABLE.add_row(str(nb), "[red]Failed[/red]")
 
