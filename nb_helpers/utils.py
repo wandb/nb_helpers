@@ -2,7 +2,6 @@ import io, json, sys
 from pathlib import Path
 
 
-
 def is_nb(fname: Path):
     "filter files that are notebooks"
     return (
@@ -11,9 +10,11 @@ def is_nb(fname: Path):
         and (not "checkpoint" in str(fname))
     )
 
+
 def find_nbs(path: Path):
     "Get all nbs on path recursevely"
-    return [nb for nb in path.rglob('*.ipynb') if is_nb(nb)]
+    return [nb for nb in path.rglob("*.ipynb") if is_nb(nb)]
+
 
 def print_output(notebook):
     "Print `notebook` in stdout for git things"
