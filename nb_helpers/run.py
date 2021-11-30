@@ -13,19 +13,22 @@ from nbconvert.preprocessors import ExecutePreprocessor
 
 from nb_helpers.utils import find_nbs
 
+
 def _create_table():
     table = Table(show_header=True, header_style="bold magenta")
     table.add_column("Notebook Path", style="dim")
     table.add_column("Status")
     table.add_column("Run Time")
-    table.add_column("Colab", style='blue u')
+    table.add_column("Colab", style="blue u")
     return table
 
 
 CONSOLE = Console()
 RUN_TABLE = _create_table()
 
-GITHUB_REPO = 'github/wandb/examples/blob/master'
+GITHUB_REPO = "github/wandb/examples/blob/master"
+
+
 def read_nb(fname):
     "Read the notebook in `fname`."
     with open(Path(fname), "r", encoding="utf8") as f:
@@ -46,13 +49,18 @@ def run_one(fname, verbose=False):
     except Exception as e:
         if verbose:
             print(f"\nError in executing {fname}\n{e}\n")
-        else: 
+        else:
             pass
-    
-    RUN_TABLE.add_row(str(fname), "[green]Ok[/green]:heavy_check_mark:" if did_run else "[red]Fail[/red]", f'{int(time.time() - start)} s', f'[u blue]https://colab.research.google.com/{GITHUB_REPO}/{fname}[\blue u]')
+
+    RUN_TABLE.add_row(
+        str(fname),
+        "[green]Ok[/green]:heavy_check_mark:" if did_run else "[red]Fail[/red]",
+        f"{int(time.time() - start)} s",
+        f"[u blue]https://colab.research.google.com/{GITHUB_REPO}/{fname}[\blue u]",
+    )
     # CONSOLE.print(f'open in colab', style=f'link "https://colab.research.google.com/{GITHUB_REPO}/{fname}"')
     return did_run, time.time() - start
-    
+
 
 @call_parse
 def test_nbs(
@@ -70,4 +78,3 @@ def test_nbs(
     if timing:
         for i, t in sorted(enumerate(times), key=lambda o: o[1], reverse=True):
             print(f"Notebook {files[i].name} took {int(t)} seconds")
-
