@@ -14,7 +14,9 @@ jobs:
         pip install -r requirements-dev.txt
         pip install -e .
     - name: Run unit tests
-      run: python -m pytest --import-mode=append tests/
+      run: |
+        coverage run -m pytest
+        coverage report -m
     - name: Check if all notebooks are cleaned
       run: |
         echo "Check we are starting with clean git checkout"
