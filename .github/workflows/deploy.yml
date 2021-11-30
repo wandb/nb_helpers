@@ -1,0 +1,21 @@
+name: Deploy
+on: [push, pull_request]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+    - name: Install the library
+      run: |
+        pip install -r requirements.txt
+        pip install -e .
+    - name: Check if all notebooks are cleaned
+      run: |
+        echo "Check we are starting with clean git checkout"
+        if [ -n "$(git status -uno -s)" ]; then echo "git status is not clean"; false; fi
+        echo "Trying to strip out notebooks"
+        clean_nbs
+        echo "Check that strip out was unnecessary"
+        git status -s # display the status to see which nbs need cleaning up
+        if [ -n "$(git status -uno -s)" ]; then echo -e "!!! Detected unstripped out notebooks\n!!!Remember to run install_git_hooks"; false; fi
