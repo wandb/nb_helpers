@@ -28,6 +28,7 @@ def clean_one(fname: Path, clear_outs: bool = False, disp: bool = False):
     - `disp` prints to stdout
     """
     if not is_nb(fname):
+        print(f"This {fname}: is not a notebook my friend")
         return
     notebook = json.load(open(str(fname), "r", encoding="utf-8"))
     clean_nb(notebook, clear_all=clear_outs)

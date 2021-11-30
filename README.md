@@ -15,6 +15,7 @@ pip install .
 This little library gives you command line tools to clean, test and check your jupyter notebooks.
 
 - Clean: When you call `clean_nbs` it will strip notebooks from the metadata, this helps prevent git conflicts. You can also pass the flag `--clear_outs` and also remove cell outputs.
+
 ```bash
 clean_nbs
 > 
