@@ -7,7 +7,7 @@ from rich.table import Table
 from fastcore.script import *
 from fastprogress import progress_bar
 
-from nb_helpers.nbdev_clean import clean_nb
+from nbdev.clean import clean_nb
 from nb_helpers.utils import print_output, is_nb, find_nbs
 
 
