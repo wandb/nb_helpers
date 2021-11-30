@@ -11,7 +11,7 @@ from nb_helpers.nbdev_clean import clean_nb
 from nb_helpers.utils import print_output, is_nb, find_nbs
 
 
-def create_table():
+def _create_table():
     table = Table(show_header=True, header_style="bold magenta")
     table.add_column("Notebook Path", style="dim")
     table.add_column("Status")
@@ -19,7 +19,7 @@ def create_table():
 
 
 CONSOLE = Console()
-CLEAN_TABLE = create_table()
+CLEAN_TABLE = _create_table()
 
 
 def clean_one(fname: Path, clear_outs: bool = False, disp: bool = False):

@@ -18,7 +18,7 @@ def _create_table():
     table.add_column("Notebook Path", style="dim")
     table.add_column("Status")
     table.add_column("Run Time")
-    table.add_column("Colab")
+    table.add_column("Colab", style='blue u')
     return table
 
 
@@ -49,7 +49,8 @@ def run_one(fname, verbose=False):
         else: 
             pass
     
-    RUN_TABLE.add_row(str(fname), "[green]Ok[/green]" if did_run else "[red]Fail[/red]", f'{int(time.time() - start)} s', f'[u blue]https://colab.research.google.com/{GITHUB_REPO}/{fname}[/u blue]')
+    RUN_TABLE.add_row(str(fname), "[green]Ok[/green]:heavy_check_mark:" if did_run else "[red]Fail[/red]", f'{int(time.time() - start)} s', f'[u blue]https://colab.research.google.com/{GITHUB_REPO}/{fname}[\blue u]')
+    # CONSOLE.print(f'open in colab', style=f'link "https://colab.research.google.com/{GITHUB_REPO}/{fname}"')
     return did_run, time.time() - start
     
 
