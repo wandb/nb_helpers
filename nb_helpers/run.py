@@ -81,7 +81,7 @@ def test_nbs(
     files = find_nbs(Path(path))
     results = []
     for nb in track(files, description="Running nbs..."):
-        print(f'  > {nb}')
+        print(f"  > {nb}")
         results.append(run_one(nb, verbose=verbose, timeout=timeout, flags=flags))
         time.sleep(0.5)
     _, times = [r[0] for r in results], [r[1] for r in results]
