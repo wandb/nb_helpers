@@ -4,12 +4,18 @@ from pathlib import Path
 from fastcore.script import *
 from rich import print
 from rich.console import Console
-from rich.table import Table
+from rich.table import Table, Column
+from rich.progress import Progress, BarColumn, TextColumn
 import nbformat
 
 from nb_helpers.utils import find_nbs
 from nb_helpers.nbdev_test import NoExportPreprocessor, get_all_flags
 
+
+def _get_progress():
+    text_column = TextColumn("{task.description}", table_column=Column(ratio=1))
+    bar_column = BarColumn(bar_width=None, table_column=Column(ratio=5))
+    return Progress(text_column, bar_column, expand=True)
 
 def _create_table():
     table = Table(show_header=True, header_style="bold magenta")
@@ -19,6 +25,8 @@ def _create_table():
     table.add_column("Colab", style="blue u")
     return table
 
+
+progress = _get_progress()
 
 CONSOLE = Console()
 RUN_TABLE = _create_table()
@@ -79,9 +87,11 @@ def test_nbs(
 ):
     files = find_nbs(Path(path))
     results = []
-    for nb in files:
-        results.append(run_one(nb, verbose=verbose, timeout=timeout, flags=flags))
-        time.sleep(0.5)
+    with progress:
+        for nb in progress.track(files, description="Running nbs..."):
+            progress.print(f"Running: {nb}")
+            results.append(run_one(nb, verbose=verbose, timeout=timeout, flags=flags))
+            time.sleep(0.5)
     _, times = [r[0] for r in results], [r[1] for r in results]
     CONSOLE.print(RUN_TABLE)
     if timing:
