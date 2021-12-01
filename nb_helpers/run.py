@@ -67,7 +67,7 @@ def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
             )
             pnb = nbformat.from_dict(notebook)
             with TemporaryDirectory() as temp_dir:
-                processor.preprocess(pnb, {'metadata': {'path': temp_dir}})
+                processor.preprocess(pnb, {"metadata": {"path": temp_dir}})
             did_run = True
     except Exception as e:
         if verbose:

@@ -3,7 +3,6 @@ from fastcore.basics import ifnone
 from pathlib import Path
 
 
-
 def is_nb(fname: Path):
     "filter files that are notebooks"
     return (
