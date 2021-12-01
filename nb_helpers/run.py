@@ -8,7 +8,7 @@ from rich.table import Table
 from rich.progress import track
 import nbformat
 
-from nb_helpers.utils import find_nbs
+from nb_helpers.utils import find_nbs, is_nb, uses_lib
 from nb_helpers.nbdev_test import NoExportPreprocessor, get_all_flags
 
 
@@ -33,27 +33,39 @@ def read_nb(fname):
         return nbformat.reads(f.read(), as_version=4)
 
 
-def run_one(fname, verbose=False, timeout=600, flags=None):
+def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
     "Run nb `fname` and timeit, recover exception"
     start = time.time()
-    did_run = False
+    did_run, skip = False, False
     if flags is None:
         flags = []
     try:
         notebook = read_nb(fname)
+
+        # check for notebook flags
         for f in get_all_flags(notebook["cells"]):
             if f not in flags:
-                RUN_TABLE.add_row(
-                    str(fname),
-                    "[green]Skipped[/green]:heavy_check_mark:",
-                    f"{int(time.time() - start)} s",
-                    f"[blue u link=https://colab.research.google.com/{GITHUB_REPO}/{fname}]open in colab[/blue u link]",
-                )
-                return did_run, time.time() - start
-        processor = NoExportPreprocessor(flags, timeout=timeout, kernel_name="python3")
-        pnb = nbformat.from_dict(notebook)
-        processor.preprocess(pnb)
-        did_run = True
+                skip = True
+                break
+
+        # check for specific libs: tensorflow, pytorch, sklearn, xgboost...
+        if not uses_lib(notebook, lib_name):
+            skip = True
+        if skip:
+            RUN_TABLE.add_row(
+                str(fname),
+                "[green]Skipped[/green]:heavy_check_mark:",
+                f"{int(time.time() - start)} s",
+                f"[blue u link=https://colab.research.google.com/{GITHUB_REPO}/{fname}]open in colab[/blue u link]",
+            )
+            return did_run, time.time() - start
+        else:
+            processor = NoExportPreprocessor(
+                flags, timeout=timeout, kernel_name="python3"
+            )
+            pnb = nbformat.from_dict(notebook)
+            processor.preprocess(pnb)
+            did_run = True
     except Exception as e:
         if verbose:
             print(f"\nError in executing {fname}\n{e}\n")
@@ -72,17 +84,26 @@ def run_one(fname, verbose=False, timeout=600, flags=None):
 
 @call_parse
 def test_nbs(
-    path: Param("A notebook name or glob to convert", str) = ".",
+    path: Param("A path to nb files", str) = ".",
     verbose: Param("Print errors along the way", store_true) = False,
     flags: Param("Space separated list of flags", str) = None,
     timeout: Param("Max runtime for each notebook, in seconds", int) = 600,
     timing: Param("Timing each notebook to see the ones are slow", store_true) = False,
+    lib_name: Param("Python lib names to filter, eg: tensorflow", str) = None,
 ):
-    files = find_nbs(Path(path))
+    path = Path(path)
+    if is_nb(path):
+        files = [path]
+    else:
+        files = find_nbs(path)
     results = []
     for nb in track(files, description="Running nbs..."):
         print(f"  > {nb}")
-        results.append(run_one(nb, verbose=verbose, timeout=timeout, flags=flags))
+        results.append(
+            run_one(
+                nb, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name
+            )
+        )
         time.sleep(0.5)
     _, times = [r[0] for r in results], [r[1] for r in results]
     CONSOLE.print(RUN_TABLE)

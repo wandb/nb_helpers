@@ -23,3 +23,13 @@ def print_output(notebook):
     output_stream.write(x)
     output_stream.write("\n")
     output_stream.flush()
+
+
+def uses_lib(nb, lib_name=None):
+    "Chek if notebooks uses library `lib_name`"
+    if lib_name is not None:
+        for cell in nb["cells"]:
+            if cell["cell_type"] == "code":
+                if lib_name in cell["source"]:
+                    return True
+    return False

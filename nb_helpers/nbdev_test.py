@@ -4,7 +4,7 @@ from nbconvert.preprocessors import ExecutePreprocessor
 from nbdev.export import check_re, _mk_flag_re
 from nbdev.export2html import _re_notebook2script
 
-TEST_FLAGS = "slow | all_slow"
+TEST_FLAGS = "slow"
 
 
 class _ReTstFlags:
