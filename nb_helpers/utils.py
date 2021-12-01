@@ -1,5 +1,7 @@
 import io, json, sys
+from fastcore.basics import ifnone
 from pathlib import Path
+
 
 
 def is_nb(fname: Path):
@@ -27,9 +29,9 @@ def print_output(notebook):
 
 def uses_lib(nb, lib_name=None):
     "Chek if notebooks uses library `lib_name`"
-    if lib_name is not None:
-        for cell in nb["cells"]:
-            if cell["cell_type"] == "code":
-                if lib_name in cell["source"]:
-                    return True
+    lib_name = ifnone(lib_name, "")
+    for cell in nb["cells"]:
+        if cell["cell_type"] == "code":
+            if lib_name in cell["source"]:
+                return True
     return False

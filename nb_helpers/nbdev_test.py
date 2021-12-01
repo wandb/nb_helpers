@@ -69,6 +69,4 @@ class NoExportPreprocessor(ExecutePreprocessor):
         for f in get_cell_flags(cell):
             if f not in self.flags:
                 return cell, resources
-        if check_re(cell, _re_notebook2script):
-            return cell, resources
         return super().preprocess_cell(cell, resources, index)

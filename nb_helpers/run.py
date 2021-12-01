@@ -1,5 +1,6 @@
 import time
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from fastcore.script import *
 from rich import print
@@ -40,9 +41,10 @@ def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
     if flags is None:
         flags = []
     try:
+        # read notebook as dict
         notebook = read_nb(fname)
 
-        # check for notebook flags
+        # check for notebook flags: all_skip, all_slow
         for f in get_all_flags(notebook["cells"]):
             if f not in flags:
                 skip = True
@@ -64,7 +66,8 @@ def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
                 flags, timeout=timeout, kernel_name="python3"
             )
             pnb = nbformat.from_dict(notebook)
-            processor.preprocess(pnb)
+            with TemporaryDirectory() as temp_dir:
+                processor.preprocess(pnb, {'metadata': {'path': temp_dir}})
             did_run = True
     except Exception as e:
         if verbose:
@@ -88,7 +91,6 @@ def test_nbs(
     verbose: Param("Print errors along the way", store_true) = False,
     flags: Param("Space separated list of flags", str) = None,
     timeout: Param("Max runtime for each notebook, in seconds", int) = 600,
-    timing: Param("Timing each notebook to see the ones are slow", store_true) = False,
     lib_name: Param("Python lib names to filter, eg: tensorflow", str) = None,
 ):
     path = Path(path)
@@ -107,6 +109,3 @@ def test_nbs(
         time.sleep(0.5)
     _, times = [r[0] for r in results], [r[1] for r in results]
     CONSOLE.print(RUN_TABLE)
-    if timing:
-        for i, t in sorted(enumerate(times), key=lambda o: o[1], reverse=True):
-            print(f"Notebook {files[i].name} took {int(t)} seconds")
