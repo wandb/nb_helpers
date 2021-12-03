@@ -1,5 +1,6 @@
-import io, json, sys
+import io, json, sys, re
 from fastcore.basics import ifnone
+from fastcore.xtras import run
 from pathlib import Path
 
 
@@ -34,3 +35,20 @@ def uses_lib(nb, lib_name=None):
             if lib_name in cell["source"]:
                 return True
     return False
+
+
+## Git
+
+def git_curent_branch():
+    "Get current git branch"
+    return run('git branch --show-current')
+
+def git_origin_repo():
+    "Get git repo url, to append to colab"
+    repo_url = run('git config --get remote.origin.url')
+    print(repo_url)
+    if 'git@' in repo_url:
+        github_repo = re.search(r":(.*?).git", repo_url).group(1)
+        return f'github/{github_repo}/blob/{git_curent_branch()}'
+    if 'html' in repo_url:
+        return f'github/{repo_url}/blob/{git_curent_branch()}'

@@ -2,6 +2,7 @@ import time
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from fastcore.xtras import run
 from fastcore.script import *
 from rich import print
 from rich.console import Console
@@ -9,7 +10,7 @@ from rich.table import Table
 from rich.progress import track
 import nbformat
 
-from nb_helpers.utils import find_nbs, is_nb, uses_lib
+from nb_helpers.utils import find_nbs, git_origin_repo, is_nb, uses_lib
 from nb_helpers.nbdev_test import NoExportPreprocessor, get_all_flags
 
 
@@ -25,7 +26,7 @@ def _create_table():
 CONSOLE = Console()
 RUN_TABLE = _create_table()
 
-GITHUB_REPO = "github/wandb/examples/blob/master"
+GITHUB_REPO = git_origin_repo()
 
 
 def read_nb(fname):
