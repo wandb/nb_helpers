@@ -110,3 +110,4 @@ def test_nbs(
         time.sleep(0.5)
     _, times = [r[0] for r in results], [r[1] for r in results]
     CONSOLE.print(RUN_TABLE)
+    print("END!")
