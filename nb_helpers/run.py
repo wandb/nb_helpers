@@ -10,7 +10,7 @@ from rich.table import Table
 from rich.progress import track
 import nbformat
 
-from nb_helpers.utils import find_nbs, git_origin_repo, is_nb, uses_lib
+from nb_helpers.utils import find_nbs, git_origin_repo, is_nb, uses_lib, is_colab
 from nb_helpers.nbdev_test import NoExportPreprocessor, get_all_flags
 
 
@@ -25,9 +25,29 @@ def _create_table():
 
 CONSOLE = Console()
 RUN_TABLE = _create_table()
-
 GITHUB_REPO = git_origin_repo()
 
+
+def _format_row(fname, status, time):
+    "Format one row for a rich.Table"
+
+    if status.lower() == 'ok':
+        status = "[green]Ok[/green]:heavy_check_mark:"
+    elif status.lower() == 'skip':
+        status = "[green]Skipped[/green]:heavy_check_mark:"
+    else:
+        status = "[red]Fail[/red]"
+
+    if is_colab():
+        link =f"https://colab.research.google.com/{GITHUB_REPO}/{fname}"
+    else:
+        link = f"[blue u link=https://colab.research.google.com/{GITHUB_REPO}/{fname}]open in colab[/blue u link]"
+
+    row = (str(fname),
+           status,
+           f"{int(time)} s",
+           link)
+    return row
 
 def read_nb(fname):
     "Read the notebook in `fname`."
@@ -55,12 +75,7 @@ def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
         if not uses_lib(notebook, lib_name):
             skip = True
         if skip:
-            RUN_TABLE.add_row(
-                str(fname),
-                "[green]Skipped[/green]:heavy_check_mark:",
-                f"{int(time.time() - start)} s",
-                f"[blue u link=https://colab.research.google.com/{GITHUB_REPO}/{fname}]open in colab[/blue u link]",
-            )
+            RUN_TABLE.add_row(*_format_row(fname, 'skip', time.time() - start))
             return did_run, time.time() - start
         else:
             processor = NoExportPreprocessor(
@@ -75,14 +90,7 @@ def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
             print(f"\nError in executing {fname}\n{e}\n")
         else:
             pass
-
-    RUN_TABLE.add_row(
-        str(fname),
-        "[green]Ok[/green]:heavy_check_mark:" if did_run else "[red]Fail[/red]",
-        f"{int(time.time() - start)} s",
-        f"[blue u link=https://colab.research.google.com/{GITHUB_REPO}/{fname}]open in colab[/blue u link]",
-    )
-    # CONSOLE.print(f'open in colab', style=f'link "https://colab.research.google.com/{GITHUB_REPO}/{fname}"')
+    RUN_TABLE.add_row(*_format_row(fname, 'ok' if did_run else 'fail', time.time() - start))
     return did_run, time.time() - start
 
 
@@ -110,4 +118,4 @@ def test_nbs(
         time.sleep(0.5)
     _, times = [r[0] for r in results], [r[1] for r in results]
     CONSOLE.print(RUN_TABLE)
-    print("END!")
+    CONSOLE.print("END!")

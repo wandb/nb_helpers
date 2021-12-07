@@ -1,4 +1,5 @@
 import io, json, sys, re
+from IPython import get_ipython
 from fastcore.basics import ifnone
 from fastcore.xtras import run
 from pathlib import Path
@@ -36,6 +37,12 @@ def uses_lib(nb, lib_name=None):
                 return True
     return False
 
+
+## colab
+def is_colab():
+    if 'google.colab' in str(get_ipython()):
+        return True
+    return False
 
 ## Git
 
