@@ -119,3 +119,4 @@ def test_nbs(
     _, times = [r[0] for r in results], [r[1] for r in results]
     CONSOLE.print(RUN_TABLE)
     CONSOLE.print("END!")
+    print("END")
