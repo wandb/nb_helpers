@@ -39,10 +39,7 @@ def _format_row(fname, status, time):
     else:
         status = "[red]Fail[/red]"
 
-    if is_colab():
-        link =f"https://colab.research.google.com/{GITHUB_REPO}/{fname}"
-    else:
-        link = f"[blue u link=https://colab.research.google.com/{GITHUB_REPO}/{fname}]open in colab[/blue u link]"
+    link = f"[link=https://colab.research.google.com/{GITHUB_REPO}/{fname}]open in colab[link]"
 
     row = (str(fname),
            status,

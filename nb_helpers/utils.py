@@ -53,7 +53,6 @@ def git_curent_branch():
 def git_origin_repo():
     "Get git repo url, to append to colab"
     repo_url = run('git config --get remote.origin.url')
-    print(repo_url)
     if 'git@' in repo_url:
         github_repo = re.search(r":(.*?).git", repo_url).group(1)
         return f'github/{github_repo}/blob/{git_curent_branch()}'
