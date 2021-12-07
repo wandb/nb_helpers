@@ -24,6 +24,7 @@ def _create_table():
 
 
 CONSOLE = Console()
+print(f'CONSOLE.is_terminal(): {CONSOLE.is_terminal}')
 RUN_TABLE = _create_table()
 GITHUB_REPO = git_origin_repo()
 
@@ -119,4 +120,3 @@ def test_nbs(
     _, times = [r[0] for r in results], [r[1] for r in results]
     CONSOLE.print(RUN_TABLE)
     CONSOLE.print("END!")
-    print("END")
