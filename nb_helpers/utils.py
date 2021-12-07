@@ -46,7 +46,7 @@ def is_colab():
 
 ## Git
 
-def git_curent_branch():
+def git_current_branch():
     "Get current git branch"
     return run('git branch --show-current')
 
@@ -55,6 +55,6 @@ def git_origin_repo():
     repo_url = run('git config --get remote.origin.url')
     if 'git@' in repo_url:
         github_repo = re.search(r":(.*?).git", repo_url).group(1)
-        return f'github/{github_repo}/blob/{git_curent_branch()}'
-    if 'html' in repo_url:
-        return f'github/{repo_url}/blob/{git_curent_branch()}'
+        return f'github/{github_repo}/blob/{git_current_branch()}'
+    else:
+        return f'{repo_url}/blob/{git_current_branch()}'
