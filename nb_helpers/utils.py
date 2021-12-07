@@ -40,24 +40,27 @@ def uses_lib(nb, lib_name=None):
 
 ## colab
 def is_colab():
-    if 'google.colab' in str(get_ipython()):
+    if "google.colab" in str(get_ipython()):
         return True
     return False
 
+
 ## Git
+
 
 def git_current_branch():
     "Get current git branch"
-    return run('git symbolic-ref --short HEAD')
+    return run("git symbolic-ref --short HEAD")
+
 
 def git_origin_repo():
     "Get git repo url, to append to colab"
-    repo_url = run('git config --get remote.origin.url')
+    repo_url = run("git config --get remote.origin.url")
 
     # check if ssh or html
-    if 'git@' in repo_url:
+    if "git@" in repo_url:
         github_repo = re.search(r":(.*?).git", repo_url).group(1)
-        return f'github/{github_repo}/blob/{git_current_branch()}'
+        return f"github/{github_repo}/blob/{git_current_branch()}"
     else:
         github_repo = re.search(r".com/(.*)", repo_url).group(1)
-        return f'github/{github_repo}/blob/{git_current_branch()}'
+        return f"github/{github_repo}/blob/{git_current_branch()}"

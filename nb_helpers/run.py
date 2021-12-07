@@ -24,7 +24,7 @@ def _create_table():
 
 
 CONSOLE = Console()
-print(f'CONSOLE.is_terminal(): {CONSOLE.is_terminal}')
+print(f"CONSOLE.is_terminal(): {CONSOLE.is_terminal}")
 RUN_TABLE = _create_table()
 GITHUB_REPO = git_origin_repo()
 
@@ -32,20 +32,18 @@ GITHUB_REPO = git_origin_repo()
 def _format_row(fname, status, time):
     "Format one row for a rich.Table"
 
-    if status.lower() == 'ok':
+    if status.lower() == "ok":
         status = "[green]Ok[/green]:heavy_check_mark:"
-    elif status.lower() == 'skip':
+    elif status.lower() == "skip":
         status = "[green]Skipped[/green]:heavy_check_mark:"
     else:
         status = "[red]Fail[/red]"
 
     link = f"[link=https://colab.research.google.com/{GITHUB_REPO}/{fname}]open in colab[link]"
 
-    row = (str(fname),
-           status,
-           f"{int(time)} s",
-           link)
+    row = (str(fname), status, f"{int(time)} s", link)
     return row
+
 
 def read_nb(fname):
     "Read the notebook in `fname`."
@@ -73,7 +71,7 @@ def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
         if not uses_lib(notebook, lib_name):
             skip = True
         if skip:
-            RUN_TABLE.add_row(*_format_row(fname, 'skip', time.time() - start))
+            RUN_TABLE.add_row(*_format_row(fname, "skip", time.time() - start))
             return did_run, time.time() - start
         else:
             processor = NoExportPreprocessor(
@@ -88,7 +86,9 @@ def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
             print(f"\nError in executing {fname}\n{e}\n")
         else:
             pass
-    RUN_TABLE.add_row(*_format_row(fname, 'ok' if did_run else 'fail', time.time() - start))
+    RUN_TABLE.add_row(
+        *_format_row(fname, "ok" if did_run else "fail", time.time() - start)
+    )
     return did_run, time.time() - start
 
 
