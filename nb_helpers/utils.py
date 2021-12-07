@@ -48,13 +48,16 @@ def is_colab():
 
 def git_current_branch():
     "Get current git branch"
-    return run('git branch --show-current')
+    return run('git symbolic-ref --short HEAD')
 
 def git_origin_repo():
     "Get git repo url, to append to colab"
     repo_url = run('git config --get remote.origin.url')
+
+    # check if ssh or html
     if 'git@' in repo_url:
         github_repo = re.search(r":(.*?).git", repo_url).group(1)
         return f'github/{github_repo}/blob/{git_current_branch()}'
     else:
-        return f'{repo_url}/blob/{git_current_branch()}'
+        github_repo = re.search(r".com/(.*)", repo_url).group(1)
+        return f'github/{github_repo}/blob/{git_current_branch()}'
