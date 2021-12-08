@@ -21,9 +21,7 @@ class _ReTstFlags:
         tst_flags = TEST_FLAGS
         tst_flags += f"|skip" if tst_flags else "skip"
         _re_all = "all_" if self.all_flag else ""
-        self._re = _mk_flag_re(
-            f"{_re_all}({tst_flags})", 0, "Any line with a test flag"
-        )
+        self._re = _mk_flag_re(f"{_re_all}({tst_flags})", 0, "Any line with a test flag")
 
     def findall(self, source):
         self._deferred_init()

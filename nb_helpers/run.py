@@ -74,9 +74,7 @@ def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
             RUN_TABLE.add_row(*_format_row(fname, "skip", time.time() - start))
             return did_run, time.time() - start
         else:
-            processor = NoExportPreprocessor(
-                flags, timeout=timeout, kernel_name="python3"
-            )
+            processor = NoExportPreprocessor(flags, timeout=timeout, kernel_name="python3")
             pnb = nbformat.from_dict(notebook)
             with TemporaryDirectory() as temp_dir:
                 processor.preprocess(pnb, {"metadata": {"path": temp_dir}})
@@ -86,10 +84,7 @@ def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
             print(f"\nError in executing {fname}\n{e}\n")
         else:
             pass
-    RUN_TABLE.add_row(
-        *_format_row(fname, "ok" if did_run else "fail", time.time() - start)
-    )
-    return did_run, time.time() - start
+    return _format_row(fname, "ok" if did_run else "fail", time.time() - start)
 
 
 @call_parse
@@ -108,12 +103,10 @@ def test_nbs(
     results = []
     for nb in track(files, description="Running nbs..."):
         print(f"  > {nb}")
-        results.append(
-            run_one(
-                nb, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name
-            )
-        )
+        row = run_one(nb, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name)
+        if is_colab() or verbose:
+            print(row)
+        RUN_TABLE.add_row(*row)
         time.sleep(0.5)
-    _, times = [r[0] for r in results], [r[1] for r in results]
     CONSOLE.print(RUN_TABLE)
     CONSOLE.print("END!")

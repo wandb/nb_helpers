@@ -7,11 +7,7 @@ from pathlib import Path
 
 def is_nb(fname: Path):
     "filter files that are notebooks"
-    return (
-        (fname.suffix == ".ipynb")
-        and (not fname.name.startswith("_"))
-        and (not "checkpoint" in str(fname))
-    )
+    return (fname.suffix == ".ipynb") and (not fname.name.startswith("_")) and (not "checkpoint" in str(fname))
 
 
 def find_nbs(path: Path):
