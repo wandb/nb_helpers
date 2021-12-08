@@ -79,8 +79,6 @@ def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
         if verbose:
             print(f'\nError in {fname}:\n{e}')
             error = e
-        else:
-            pass
         error = e
     return (_format_row(fname, "ok" if did_run else "fail", time.time() - start, github_repo), error)
 
@@ -101,6 +99,7 @@ def test_nbs(
         files = [path]
     else:
         files = find_nbs(path)
+    pprint(f"Testing {len(files)} notebooks")
     failed_nbs = {}
     for nb in track(files, description="Running nbs..."):
         row, e = run_one(nb, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name)
