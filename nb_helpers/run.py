@@ -71,8 +71,7 @@ def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
         if not uses_lib(notebook, lib_name):
             skip = True
         if skip:
-            RUN_TABLE.add_row(*_format_row(fname, "skip", time.time() - start))
-            return did_run, time.time() - start
+            return _format_row(fname, "skip", time.time() - start)
         else:
             processor = NoExportPreprocessor(flags, timeout=timeout, kernel_name="python3")
             pnb = nbformat.from_dict(notebook)
@@ -102,10 +101,8 @@ def test_nbs(
         files = find_nbs(path)
     results = []
     for nb in track(files, description="Running nbs..."):
-        print(f"  > {nb}")
         row = run_one(nb, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name)
-        if is_colab() or verbose:
-            print(row)
+        print(f' > {row[0]:60} |{row[1]:40} |{row[2]:5}')
         RUN_TABLE.add_row(*row)
         time.sleep(0.5)
     CONSOLE.print(RUN_TABLE)
