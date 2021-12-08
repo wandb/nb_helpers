@@ -99,13 +99,11 @@ def test_nbs(
         files = [path]
     else:
         files = find_nbs(path)
+    results = []
     for nb in track(files, description="Running nbs..."):
         row = run_one(nb, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name)
-        # print(f' > {row[0]:60} |{row[1]:40} |{row[2]:5}')
+        print(f' > {row[0]:100} |{row[1]:40} |{row[2]:5}')
         RUN_TABLE.add_row(*row)
         time.sleep(0.5)
-        with CONSOLE:
-            CONSOLE.clear()
-            CONSOLE.print(RUN_TABLE)
-    # CONSOLE.print(RUN_TABLE)
-    # CONSOLE.print("END!")
+    CONSOLE.print(RUN_TABLE)
+    CONSOLE.print("END!")
