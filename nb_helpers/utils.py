@@ -51,12 +51,15 @@ def git_current_branch():
 
 def git_origin_repo():
     "Get git repo url, to append to colab"
-    repo_url = run("git config --get remote.origin.url")
-
-    # check if ssh or html
-    if "git@" in repo_url:
-        github_repo = re.search(r":(.*?).git", repo_url).group(1)
-        return f"github/{github_repo}/blob/{git_current_branch()}"
-    else:
-        github_repo = re.search(r".com/(.*)", repo_url).group(1)
-        return f"github/{github_repo}/blob/{git_current_branch()}"
+    try:
+        repo_url = run("git config --get remote.origin.url")
+        # check if ssh or html
+        if "git@" in repo_url:
+            github_repo = re.search(r":(.*?).git", repo_url).group(1)
+            return f"github/{github_repo}/blob/{git_current_branch()}"
+        else:
+            github_repo = re.search(r".com/(.*)", repo_url).group(1)
+            return f"github/{github_repo}/blob/{git_current_branch()}"
+    except:
+        print("Probably not in a git repo\n")
+        return ""

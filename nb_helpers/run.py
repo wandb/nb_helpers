@@ -14,7 +14,6 @@ import nbformat
 from nb_helpers.utils import find_nbs, git_origin_repo, is_nb, uses_lib
 from nb_helpers.nbdev_test import NoExportPreprocessor, get_all_flags
 
-
 __all__ = ["run_one", "test_nbs"]
 
 def _create_table():
@@ -26,13 +25,7 @@ def _create_table():
     return table
 
 
-CONSOLE = Console(width=180)
-print(f"CONSOLE.is_terminal(): {CONSOLE.is_terminal}")
-RUN_TABLE = _create_table()
-GITHUB_REPO = git_origin_repo()
-
-
-def _format_row(fname, status, time):
+def _format_row(fname, status, time, github_repo):
     "Format one row for a rich.Table"
 
     if status.lower() == "ok":
@@ -42,7 +35,7 @@ def _format_row(fname, status, time):
     else:
         status = "[red]Fail[/red]"
 
-    link = f"[link=https://colab.research.google.com/{GITHUB_REPO}/{fname}]open[link]"
+    link = f"[link=https://colab.research.google.com/{github_repo}/{fname}]open[link]"
 
     row = (str(fname), status, f"{int(time)} s", link)
     return row
@@ -56,6 +49,7 @@ def read_nb(fname):
 
 def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
     "Run nb `fname` and timeit, recover exception"
+    github_repo = git_origin_repo()
     start = time.time()
     did_run, skip, error = False, False, None
     if flags is None:
@@ -74,7 +68,7 @@ def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
         if not uses_lib(notebook, lib_name):
             skip = True
         if skip:
-            return _format_row(fname, "skip", time.time() - start), None
+            return _format_row(fname, "skip", time.time() - start, github_repo), None
         else:
             processor = NoExportPreprocessor(flags, timeout=timeout, kernel_name="python3")
             pnb = nbformat.from_dict(notebook)
@@ -88,7 +82,7 @@ def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
         else:
             pass
         error = e
-    return (_format_row(fname, "ok" if did_run else "fail", time.time() - start), error)
+    return (_format_row(fname, "ok" if did_run else "fail", time.time() - start, github_repo), error)
 
 
 @call_parse
@@ -99,6 +93,9 @@ def test_nbs(
     timeout: Param("Max runtime for each notebook, in seconds", int) = 600,
     lib_name: Param("Python lib names to filter, eg: tensorflow", str) = None,
 ):
+    console = Console(width=180)
+    print(f"CONSOLE.is_terminal(): {console.is_terminal}")
+    table = _create_table()
     path = Path(path)
     if is_nb(path):
         files = [path]
@@ -108,11 +105,11 @@ def test_nbs(
     for nb in track(files, description="Running nbs..."):
         row, e = run_one(nb, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name)
         pprint(f' > {row[0]:80} | {row[1]:40} | {row[2]:5} | {row[3]}')
-        RUN_TABLE.add_row(*row)
+        table.add_row(*row)
         time.sleep(0.1)
         if e is not None:
             failed_nbs[str(nb)] = e
-    CONSOLE.print(RUN_TABLE)
-    CONSOLE.print("END!")
+    console.print(table)
+    console.print("END!")
 
     return failed_nbs
