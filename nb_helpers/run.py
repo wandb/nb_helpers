@@ -2,17 +2,20 @@ import time
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import nbconvert
 from fastcore.xtras import run
 from fastcore.script import *
-from rich import print
+from rich import print as pprint
 from rich.console import Console
 from rich.table import Table
 from rich.progress import track
 import nbformat
 
-from nb_helpers.utils import find_nbs, git_origin_repo, is_nb, uses_lib, is_colab
+from nb_helpers.utils import find_nbs, git_origin_repo, is_nb, uses_lib
 from nb_helpers.nbdev_test import NoExportPreprocessor, get_all_flags
 
+
+__all__ = ["run_one", "test_nbs"]
 
 def _create_table():
     table = Table(show_header=True, header_style="bold magenta")
@@ -54,7 +57,7 @@ def read_nb(fname):
 def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
     "Run nb `fname` and timeit, recover exception"
     start = time.time()
-    did_run, skip = False, False
+    did_run, skip, error = False, False, None
     if flags is None:
         flags = []
     try:
@@ -71,7 +74,7 @@ def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
         if not uses_lib(notebook, lib_name):
             skip = True
         if skip:
-            return _format_row(fname, "skip", time.time() - start)
+            return _format_row(fname, "skip", time.time() - start), None
         else:
             processor = NoExportPreprocessor(flags, timeout=timeout, kernel_name="python3")
             pnb = nbformat.from_dict(notebook)
@@ -80,10 +83,12 @@ def run_one(fname, verbose=False, timeout=600, flags=None, lib_name=None):
             did_run = True
     except Exception as e:
         if verbose:
-            print(f"\nError in executing {fname}\n{e}\n")
+            print(f'\nError in {fname}:\n{e}')
+            error = e
         else:
             pass
-    return _format_row(fname, "ok" if did_run else "fail", time.time() - start)
+        error = e
+    return (_format_row(fname, "ok" if did_run else "fail", time.time() - start), error)
 
 
 @call_parse
@@ -99,10 +104,15 @@ def test_nbs(
         files = [path]
     else:
         files = find_nbs(path)
+    failed_nbs = {}
     for nb in track(files, description="Running nbs..."):
-        row = run_one(nb, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name)
-        print(f' > {row[0]:80} | {row[1]:40} | {row[2]:5} | {row[3]}')
+        row, e = run_one(nb, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name)
+        pprint(f' > {row[0]:80} | {row[1]:40} | {row[2]:5} | {row[3]}')
         RUN_TABLE.add_row(*row)
-        time.sleep(0.5)
+        time.sleep(0.1)
+        if e is not None:
+            failed_nbs[str(nb)] = e
     CONSOLE.print(RUN_TABLE)
     CONSOLE.print("END!")
+
+    return failed_nbs
