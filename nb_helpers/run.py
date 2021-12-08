@@ -23,7 +23,7 @@ def _create_table():
     return table
 
 
-CONSOLE = Console()
+CONSOLE = Console(width=125)
 print(f"CONSOLE.is_terminal(): {CONSOLE.is_terminal}")
 RUN_TABLE = _create_table()
 GITHUB_REPO = git_origin_repo()
@@ -102,7 +102,7 @@ def test_nbs(
     results = []
     for nb in track(files, description="Running nbs..."):
         row = run_one(nb, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name)
-        print(f' > {row[0]:100} |{row[1]:40} |{row[2]:5}')
+        print(f' > {row[0]:80} |{row[1]:40} |{row[2]:5}')
         RUN_TABLE.add_row(*row)
         time.sleep(0.5)
     CONSOLE.print(RUN_TABLE)
