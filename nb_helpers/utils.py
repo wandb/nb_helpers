@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def is_nb(fname: Path):
-    "filter files that are notebooks"
+    "filter files that are jupyter notebooks"
     return (fname.suffix == ".ipynb") and (not fname.name.startswith("_")) and (not "checkpoint" in str(fname))
 
 
@@ -24,12 +24,12 @@ def print_output(notebook):
     output_stream.flush()
 
 
-def uses_lib(nb, lib_name=None):
-    "Chek if notebooks uses library `lib_name`"
-    lib_name = ifnone(lib_name, "")
+def search_string_in_code(nb, string: str = None):
+    "Search string in notebook code cells"
+    string = ifnone(string, "")
     for cell in nb["cells"]:
         if cell["cell_type"] == "code":
-            if lib_name in cell["source"]:
+            if string in cell["source"]:
                 return True
     return False
 
