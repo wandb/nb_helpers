@@ -116,7 +116,9 @@ def test_nbs(
     flags: Param("Space separated list of flags", str) = None,
     timeout: Param("Max runtime for each notebook, in seconds", int) = 600,
     lib_name: Param("Python lib names to filter, eg: tensorflow", str) = None,
-    features: Param("Expresion used inside the code cells, eg: itertools.chain, Path,. Pass as comma separated", str) = None, 
+    features: Param(
+        "Expresion used inside the code cells, eg: itertools.chain, Path,. Pass as comma separated", str
+    ) = None,
 ):
     console = Console(width=180)
     print(f"CONSOLE.is_terminal(): {console.is_terminal}")

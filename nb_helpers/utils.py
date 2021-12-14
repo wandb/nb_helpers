@@ -23,7 +23,8 @@ def print_output(notebook):
     output_stream.write("\n")
     output_stream.flush()
 
-def search_string_in_code(nb, string:str=None):
+
+def search_string_in_code(nb, string: str = None):
     "Search string in notebook code cells"
     string = ifnone(string, "")
     for cell in nb["cells"]:
@@ -31,6 +32,7 @@ def search_string_in_code(nb, string:str=None):
             if string in cell["source"]:
                 return True
     return False
+
 
 ## colab
 def is_colab():
