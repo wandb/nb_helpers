@@ -19,7 +19,7 @@ def find_nbs(path: Path):
     return [nb for nb in path.rglob("*.ipynb") if is_nb(nb)]
 
 
-def print_output(notebook):
+def print_output(notebook):  # pragma: no cover
     "Print `notebook` in stdout for git things"
     output_stream = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
     x = json.dumps(notebook, sort_keys=True, indent=1, ensure_ascii=False)
@@ -47,7 +47,7 @@ def search_string_in_nb(nb, string: str = None):
 
 ## colab
 def is_colab():
-    if "google.colab" in str(get_ipython()):
+    if "google.colab" in str(get_ipython()):  # pragma: no cover
         return True
     return False
 
