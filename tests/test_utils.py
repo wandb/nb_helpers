@@ -40,6 +40,5 @@ def test_search_string_in_nb():
 
 # git
 def test_git_origin_repo():
-    assert (
-        git_origin_repo() == f"github/wandb/nb_helpers/blob/{git_current_branch()}"
-    ), "Maybe not in main? not in nb_helpers?"
+    repo = git_origin_repo()
+    assert repo == f"github/wandb/nb_helpers/blob/{git_current_branch()}", f"Maybe not in main? {repo}"
