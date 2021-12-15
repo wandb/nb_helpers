@@ -16,7 +16,7 @@ setuptools.setup(
     entry_points={
         "console_scripts": [
             "clean_nbs=nb_helpers.clean:clean_nbs",
-            "test_nbs=nb_helpers.run:test_nbs",
+            "run_nbs=nb_helpers.run:run_nbs",
         ]
     },
 )

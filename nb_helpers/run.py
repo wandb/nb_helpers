@@ -5,15 +5,13 @@ from tempfile import TemporaryDirectory
 from fastcore.basics import listify
 
 import nbformat
-from nbformat import NotebookNode
-from fastcore.xtras import run
 from fastcore.script import *
 from rich import print as pprint
 from rich.console import Console
 from rich.table import Table
 from rich.progress import track
 
-from nb_helpers.utils import find_nbs, git_origin_repo, is_nb, search_string_in_code
+from nb_helpers.utils import find_nbs, git_origin_repo, is_nb, search_string_in_nb, read_nb
 from nb_helpers.nbdev_test import NoExportPreprocessor, get_all_flags
 
 FEATURES = ["Path", "os", "chain", "Union", "sleep"]
@@ -51,11 +49,6 @@ def _format_row(fname: Path, status: str, time: str, github_repo: str, xtra_col=
     return row
 
 
-def read_nb(fname: Union[Path, str]) -> NotebookNode:
-    "Read the notebook in `fname`."
-    with open(Path(fname), "r", encoding="utf8") as f:
-        return nbformat.reads(f.read(), as_version=4)
-
 
 def run_one(
     fname: Union[Path, str],
@@ -84,19 +77,20 @@ def run_one(
         # search code for specific strings in code: io, Path, list, etc...
         features_used = []
         for feat in listify(features):
-            if search_string_in_code(notebook, feat):
+            if search_string_in_nb(notebook, feat):
                 features_used.append(feat)
 
         # check for specific libs: tensorflow, pytorch, sklearn, xgboost...
-        if not search_string_in_code(notebook, lib_name):
+        if not search_string_in_nb(notebook, lib_name):
             skip = True
         if skip:
             return _format_row(fname, "skip", time.time() - start, github_repo, xtra_col=features_used), None
         else:
+            #run notebook
             processor = NoExportPreprocessor(flags, timeout=timeout, kernel_name="python3")
-            pnb = nbformat.from_dict(notebook)
+            processed_nb = nbformat.from_dict(notebook)
             with TemporaryDirectory() as temp_dir:
-                processor.preprocess(pnb, {"metadata": {"path": temp_dir}})
+                processor.preprocess(processed_nb, {"metadata": {"path": temp_dir}})
             did_run = True
     except Exception as e:
         if verbose:
@@ -110,7 +104,7 @@ def run_one(
 
 
 @call_parse
-def test_nbs(
+def run_nbs(
     path: Param("A path to nb files", str) = ".",
     verbose: Param("Print errors along the way", store_true) = False,
     flags: Param("Space separated list of flags", str) = None,
