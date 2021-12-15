@@ -3,7 +3,6 @@ from tests import TEST_PATH, TEST_NB
 from nb_helpers.utils import is_nb, find_nbs, git_current_branch, git_origin_repo, read_nb, search_string_in_nb
 
 
-
 def test_is_nb():
     bad_names = [
         Path("folder/.ipynb_checkpoints"),
@@ -25,9 +24,9 @@ def test_search_string_in_nb():
     assert search_string_in_nb(nb, "writer") is True, "We open and write a file"
     assert search_string_in_nb(nb, "pandas") is False, "pandas is not used in this notebook"
 
-# git
-def test_git_current_branch():
-    assert git_current_branch() == 'main', "Maybe you are not in main?"
 
+# git
 def test_git_origin_repo():
-    assert git_origin_repo() == 'github/wandb/nb_helpers/blob/main', "Maybe not in main? not in nb_helpers?"
+    assert (
+        git_origin_repo() == f"github/wandb/nb_helpers/blob/{git_current_branch()}"
+    ), "Maybe not in main? not in nb_helpers?"
