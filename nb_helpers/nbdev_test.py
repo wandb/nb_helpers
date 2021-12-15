@@ -5,6 +5,7 @@ from nbdev.export import _mk_flag_re
 
 TEST_FLAGS = "slow"
 
+
 class _ReTstFlags:
     "Test flag matching regular expressions"
 

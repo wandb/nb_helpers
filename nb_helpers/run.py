@@ -1,5 +1,6 @@
 import time
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Union, List
 from tempfile import TemporaryDirectory
 from fastcore.basics import listify
@@ -31,23 +32,21 @@ def _create_table(xtra_col=None) -> Table:
     return table
 
 
+STATUS = SimpleNamespace(
+    ok="[green]Ok[/green]:heavy_check_mark:", fail="[red]Fail[/red]", skip="[green]Skipped[/green]:heavy_check_mark:"
+)
+
+
 def _format_row(fname: Path, status: str, time: str, github_repo: str, xtra_col=None) -> tuple:
     "Format one row for a rich.Table"
 
-    if status.lower() == "ok":
-        status = "[green]Ok[/green]:heavy_check_mark:"
-    elif status.lower() == "skip":
-        status = "[green]Skipped[/green]:heavy_check_mark:"
-    else:
-        status = "[red]Fail[/red]"
-
+    formatted_status = getattr(STATUS, status.lower())
     link = f"[link=https://colab.research.google.com/{github_repo}/{str(fname)}]open[link]"
 
-    row = (str(fname), status, f"{int(time)} s", link)
+    row = (str(fname), formatted_status, f"{int(time)} s", link)
     if len(listify(xtra_col)) > 0:
         row += (str(xtra_col),)
     return row
-
 
 
 def run_one(
@@ -86,7 +85,7 @@ def run_one(
         if skip:
             return _format_row(fname, "skip", time.time() - start, github_repo, xtra_col=features_used), None
         else:
-            #run notebook
+            # run notebook
             processor = NoExportPreprocessor(flags, timeout=timeout, kernel_name="python3")
             processed_nb = nbformat.from_dict(notebook)
             with TemporaryDirectory() as temp_dir:
@@ -110,9 +109,7 @@ def run_nbs(
     flags: Param("Space separated list of flags", str) = None,
     timeout: Param("Max runtime for each notebook, in seconds", int) = 600,
     lib_name: Param("Python lib names to filter, eg: tensorflow", str) = None,
-    features: Param(
-        "Expresion used inside the code cells, eg: itertools.chain, Path,. Pass as comma separated", str
-    ) = None,
+    features: Param("Search strings in code cells, eg: itertools.chain, Path, comma separated", str) = None,
 ):
     console = Console(width=180)
     print(f"CONSOLE.is_terminal(): {console.is_terminal}")
