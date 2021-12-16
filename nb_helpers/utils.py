@@ -1,4 +1,8 @@
 import io, json, sys, re
+from typing import Union
+
+import nbformat
+from nbformat import NotebookNode
 from IPython import get_ipython
 from fastcore.basics import ifnone
 from fastcore.xtras import run
@@ -15,7 +19,7 @@ def find_nbs(path: Path):
     return [nb for nb in path.rglob("*.ipynb") if is_nb(nb)]
 
 
-def print_output(notebook):
+def print_output(notebook):  # pragma: no cover
     "Print `notebook` in stdout for git things"
     output_stream = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
     x = json.dumps(notebook, sort_keys=True, indent=1, ensure_ascii=False)
@@ -24,7 +28,14 @@ def print_output(notebook):
     output_stream.flush()
 
 
-def search_string_in_code(nb, string: str = None):
+# nb
+def read_nb(fname: Union[Path, str]) -> NotebookNode:
+    "Read the notebook in `fname`."
+    with open(Path(fname), "r", encoding="utf8") as f:
+        return nbformat.reads(f.read(), as_version=4)
+
+
+def search_string_in_nb(nb, string: str = None):
     "Search string in notebook code cells"
     string = ifnone(string, "")
     for cell in nb["cells"]:
@@ -36,14 +47,12 @@ def search_string_in_code(nb, string: str = None):
 
 ## colab
 def is_colab():
-    if "google.colab" in str(get_ipython()):
+    if "google.colab" in str(get_ipython()):  # pragma: no cover
         return True
     return False
 
 
 ## Git
-
-
 def git_current_branch():
     "Get current git branch"
     return run("git symbolic-ref --short HEAD")

@@ -1,13 +1,14 @@
+#######################################
+# All this code comes from fastai/nbdev
+#######################################
+
 from nbconvert.preprocessors import ExecutePreprocessor
-
-
-from nbdev.export import check_re, _mk_flag_re
-from nbdev.export2html import _re_notebook2script
+from nbdev.export import _mk_flag_re
 
 TEST_FLAGS = "slow"
 
 
-class _ReTstFlags:
+class _ReTstFlags:  # pragma: no cover
     "Test flag matching regular expressions"
 
     def __init__(self, all_flag):
@@ -67,4 +68,5 @@ class NoExportPreprocessor(ExecutePreprocessor):
         for f in get_cell_flags(cell):
             if f not in self.flags:
                 return cell, resources
+        # if check_re(cell, _re_notebook2script): return cell, resources
         return super().preprocess_cell(cell, resources, index)
