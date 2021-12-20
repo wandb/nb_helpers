@@ -1,4 +1,5 @@
 import io, json, sys, re
+from types import SimpleNamespace
 from typing import Union
 
 import nbformat
@@ -35,13 +36,30 @@ def read_nb(fname: Union[Path, str]) -> NotebookNode:
         return nbformat.reads(f.read(), as_version=4)
 
 
-def search_string_in_nb(nb, string: str = None):
+def _first_cell(nb):
+    "return the first cell of the notebook"
+    return nb["cells"][0]["source"]
+
+def _get_tracker(cell):
+    "Get the value inside <!--- @wandbcode{tracker} -->"
+    if "@wandbcode" not in cell:
+        return "[red]No Tracker[/red]"
+    return re.search(r"@wandbcode{(.*?)}", cell).group(1)
+
+def get_wandb_tracker(nb):
+    "get the tracker id"
+    return _get_tracker(_first_cell(nb))
+
+CellType = SimpleNamespace(code="code", md="markdown")
+
+def search_string_in_nb(nb, string: str = None, cell_type=CellType.code):
     "Search string in notebook code cells"
-    string = ifnone(string, "")
+    strings = ifnone(string, "").split(",")
     for cell in nb["cells"]:
-        if cell["cell_type"] == "code":
-            if string in cell["source"]:
-                return True
+        if cell["cell_type"] == cell_type:
+            for string in strings:
+                if string in cell["source"]:
+                    return True
     return False
 
 
