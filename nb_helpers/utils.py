@@ -4,12 +4,31 @@ from typing import Union
 
 import nbformat
 from nbformat import NotebookNode
+from rich.table import Table
 from IPython import get_ipython
-from fastcore.basics import ifnone
+from fastcore.basics import ifnone, listify
 from fastcore.xtras import run
 from pathlib import Path
 
 
+# rich
+def create_table(columns=["Notebook Path", "Status", "Run Time", "Colab"], xtra_cols=None) -> Table:
+    table = Table(show_header=True, header_style="bold magenta")
+    for col in columns + listify(xtra_cols):
+        table.add_column(col)
+    return table
+
+
+def remove_rich_format(text):
+    "Remove rich fancy coloring"
+    res = re.search(r"\](.*?)\[", text)
+    if res is None:
+        return text
+    else:
+        return res.group(1)
+
+
+# nb
 def is_nb(fname: Path):
     "filter files that are jupyter notebooks"
     return (fname.suffix == ".ipynb") and (not fname.name.startswith("_")) and (not "checkpoint" in str(fname))
@@ -29,31 +48,17 @@ def print_output(notebook):  # pragma: no cover
     output_stream.flush()
 
 
-# nb
 def read_nb(fname: Union[Path, str]) -> NotebookNode:
     "Read the notebook in `fname`."
     with open(Path(fname), "r", encoding="utf8") as f:
         return nbformat.reads(f.read(), as_version=4)
 
 
-def _first_cell(nb):
-    "return the first cell of the notebook"
-    return nb["cells"][0]["source"]
-
-def _get_tracker(cell):
-    "Get the value inside <!--- @wandbcode{tracker} -->"
-    if "@wandbcode" not in cell:
-        return "[red]No Tracker[/red]"
-    return re.search(r"@wandbcode{(.*?)}", cell).group(1)
-
-def get_wandb_tracker(nb):
-    "get the tracker id"
-    return _get_tracker(_first_cell(nb))
-
 CellType = SimpleNamespace(code="code", md="markdown")
 
+
 def search_string_in_nb(nb, string: str = None, cell_type=CellType.code):
-    "Search string in notebook code cells"
+    "Search string in notebook code cells, you can pass comma separated strings"
     strings = ifnone(string, "").split(",")
     for cell in nb["cells"]:
         if cell["cell_type"] == cell_type:

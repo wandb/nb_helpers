@@ -17,6 +17,7 @@ setuptools.setup(
         "console_scripts": [
             "clean_nbs=nb_helpers.clean:clean_nbs",
             "run_nbs=nb_helpers.run:run_nbs",
+            "summary_nbs=nb_helpers.wandb:summary_nbs",
         ]
     },
 )

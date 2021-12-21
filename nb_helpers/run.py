@@ -9,27 +9,15 @@ import nbformat
 from fastcore.script import *
 from rich import print as pprint
 from rich.console import Console
-from rich.table import Table
 from rich.progress import track
 
-from nb_helpers.utils import find_nbs, git_origin_repo, is_nb, search_string_in_nb, read_nb
+from nb_helpers.utils import find_nbs, git_origin_repo, is_nb, search_string_in_nb, read_nb, create_table
 from nb_helpers.nbdev_test import NoExportPreprocessor, get_all_flags
 
 FEATURES = ["Path", "os", "chain", "Union", "sleep"]
 ## ["WandbCallback", "WandbLogger", "Table", "Artifact", "sweep"]
 
-__all__ = ["run_one", "test_nbs"]
-
-
-def _create_table(xtra_col=None) -> Table:
-    table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("Notebook Path", style="dim")
-    table.add_column("Status")
-    table.add_column("Run Time")
-    table.add_column("Colab", style="blue u")
-    if xtra_col is not None:
-        table.add_column(xtra_col)
-    return table
+__all__ = ["run_one", "run_nbs"]
 
 
 STATUS = SimpleNamespace(
@@ -60,13 +48,15 @@ def skip_nb(notebook, flags=None, filters=None):
     return skip
 
 
-def _exec_nb(notebook, flags=None, timeout=600):
-    "run notebook"
+def exec_nb(notebook, flags=None, timeout=600, use_temp_dir=True):
+    "run notebook, possible skiping cells with flags"
     processor = NoExportPreprocessor(flags, timeout=timeout, kernel_name="python3")
     processed_nb = nbformat.from_dict(notebook)
     with TemporaryDirectory() as temp_dir:
-        processor.preprocess(processed_nb, {"metadata": {"path": temp_dir}})
+        resources = {"metadata": {"path": temp_dir}} if use_temp_dir else None
+        processor.preprocess(processed_nb, resources)
     return True
+
 
 def run_one(
     fname: Union[Path, str],
@@ -85,12 +75,13 @@ def run_one(
         # read notebook as dict
         notebook = read_nb(fname)
 
-        #check if notebooks has to be runned
+        # check if notebooks has to be runned
         skip = skip_nb(notebook, flags, lib_name)
+
         if skip or no_run:
             return _format_row(fname, "skip", time.time() - start, github_repo), None
         else:
-            did_run = _exec_nb(notebook, flags, timeout)
+            did_run = exec_nb(notebook, flags, timeout)
     except Exception as e:
         if verbose:
             print(f"\nError in {fname}:\n{e}")
@@ -109,11 +100,12 @@ def run_nbs(
     flags: Param("Space separated list of flags", str) = None,
     timeout: Param("Max runtime for each notebook, in seconds", int) = 600,
     lib_name: Param("Python lib names to filter, eg: tensorflow", str) = None,
-    no_run: Param("Do not run any notebook", store_true) = False, 
+    no_run: Param("Do not run any notebook", store_true) = False,
+    post_issue: Param("Post the failure in github", store_true) = False,
 ):
     console = Console(width=180)
     print(f"CONSOLE.is_terminal(): {console.is_terminal}")
-    table = _create_table()
+    table = create_table()
     path = Path(path)
     if is_nb(path):
         files = [path]
@@ -132,4 +124,3 @@ def run_nbs(
     console.print("END!")
 
     return failed_nbs
-
