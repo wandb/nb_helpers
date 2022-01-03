@@ -18,11 +18,14 @@ PYTHON_LIBS = "torch,keras,tensorflow,sklearn,yolo,jax,pandas,numpy,spacy,transf
 
 def get_wandb_tracker(nb):
     "Get the value inside <!--- @wandbcode{tracker} -->"
-    for cell in nb["cells"]:
+    for i, cell in enumerate(nb["cells"]):
         if "@wandbcode" in cell["source"]:
             tracker_id = re.search(r"@wandbcode{(.*?)}", cell["source"]).group(1)
-            return f'[green]{tracker_id.split(",")[0]}[/green]'  # remove the v param
-    return "[red]No Tracker[/red]"
+            if i!=0:
+                return f'[yellow]{i}: {tracker_id.split(",")[0]}[/yellow]'  # remove the v param
+            else:
+                return f'[green]{i}: {tracker_id.split(",")[0]}[/green]'  # remove the v param
+    return ""
 
 
 def _search_code(nb, features=WANDB_FEATURES):

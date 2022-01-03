@@ -1,6 +1,7 @@
 import io, json, sys, re
 from types import SimpleNamespace
 from typing import Union
+from fastcore.foundation import L
 
 import nbformat
 from nbformat import NotebookNode
@@ -36,8 +37,7 @@ def is_nb(fname: Path):
 
 def find_nbs(path: Path):
     "Get all nbs on path recursevely"
-    return [nb for nb in path.rglob("*.ipynb") if is_nb(nb)]
-
+    return L([nb for nb in path.rglob("*.ipynb") if is_nb(nb)]).sorted()
 
 def print_output(notebook):  # pragma: no cover
     "Print `notebook` in stdout for git things"
