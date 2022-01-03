@@ -21,7 +21,7 @@ def get_wandb_tracker(nb):
     for i, cell in enumerate(nb["cells"]):
         if "@wandbcode" in cell["source"]:
             tracker_id = re.search(r"@wandbcode{(.*?)}", cell["source"]).group(1)
-            if i!=0:
+            if i != 0:
                 return f'[yellow]{i}: {tracker_id.split(",")[0]}[/yellow]'  # remove the v param
             else:
                 return f'[green]{i}: {tracker_id.split(",")[0]}[/green]'  # remove the v param

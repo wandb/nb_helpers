@@ -39,6 +39,7 @@ def find_nbs(path: Path):
     "Get all nbs on path recursevely"
     return L([nb for nb in path.rglob("*.ipynb") if is_nb(nb)]).sorted()
 
+
 def print_output(notebook):  # pragma: no cover
     "Print `notebook` in stdout for git things"
     output_stream = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
