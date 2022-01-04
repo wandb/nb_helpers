@@ -67,7 +67,7 @@ def run_one(
     no_run: bool = False,
 ):
     "Run nb `fname` and timeit, recover exception"
-    github_repo = git_origin_repo()
+    github_repo = git_origin_repo(fname)
     start = time.time()
     did_run, skip, error = False, False, None
     flags = listify(flags)
