@@ -9,7 +9,7 @@ from fastcore.basics import listify
 from rich import print
 from rich.console import Console
 
-from nb_helpers.utils import create_table, remove_rich_format, search_string_in_nb, is_nb, read_nb, find_nbs
+from nb_helpers.utils import create_table, get_colab_url, remove_rich_format, search_string_in_nb, is_nb, read_nb, find_nbs
 
 
 WANDB_FEATURES = "Table,sweep,WandbCallback,WandbLogger,Artifact"
@@ -26,6 +26,7 @@ def get_wandb_tracker(nb):
             else:
                 return f'[green]{i}: {tracker_id.split(",")[0]}[/green]'  # remove the v param
     return ""
+
 
 
 def _search_code(nb, features=WANDB_FEATURES):
@@ -60,7 +61,7 @@ def summary_nbs(
         csv_writer.writerow(["#", "nb name", "tracker", "wandb features", "python libs"])
 
         # a beautiful rich terminal table
-        table = create_table(["#", "nb name", "tracker", "wandb features", "python libs"])
+        table = create_table(["#", "nb name", "tracker", "wandb features", "python libs", "colab"])
 
         for i, nb_path in enumerate(files):
             nb = read_nb(nb_path)
@@ -71,6 +72,7 @@ def summary_nbs(
             csv_writer.writerow(
                 [f"{i+1}", str(fname), remove_rich_format(tracker_id), "-".join(features), "-".join(libs)]
             )
-            table.add_row(f"{i+1}", str(fname), tracker_id, ", ".join(features), ", ".join(libs))
+            colab_link = f"[link={get_colab_url(nb_path)}]open[link]"
+            table.add_row(f"{i+1}", str(fname), tracker_id, ", ".join(features), ", ".join(libs), colab_link)
         console.print(table)
         console.print("END!")
