@@ -1,13 +1,16 @@
 from pathlib import Path
+
+from nbformat import read
 from tests import TEST_PATH, TEST_NB
 from nb_helpers.utils import (
+    add_colab_badge,
     is_colab,
     is_nb,
     find_nbs,
-    git_current_branch,
     git_origin_repo,
     read_nb,
     search_string_in_nb,
+    _has_colab_badge
 )
 
 
@@ -40,5 +43,13 @@ def test_search_string_in_nb():
 
 # git
 def test_git_origin_repo():
-    repo = git_origin_repo()
-    assert repo == f"github/wandb/nb_helpers/blob/{git_current_branch()}", f"Maybe not in main? {repo}"
+    repo = git_origin_repo(TEST_NB)
+    assert repo == f"wandb/nb_helpers", f"Maybe not a git repo? {repo}"
+
+def test_colab_badge():
+    nb = read_nb(TEST_NB)
+    idx = _has_colab_badge(nb)
+    assert idx == 1
+    badged_nb = add_colab_badge(TEST_NB)
+    idx = _has_colab_badge(badged_nb)
+    assert idx == 0
