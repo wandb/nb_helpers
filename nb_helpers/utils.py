@@ -1,34 +1,75 @@
-import io, json, sys, re
+import io, json, sys, re, csv
 from types import SimpleNamespace
 from typing import Union
 from fastcore.foundation import L
 
 import nbformat
 from nbformat import NotebookNode
+from rich import box
 from rich.table import Table
-from IPython import get_ipython
+from rich.console import Console
 from fastcore.basics import ifnone, listify
 from fastcore.xtras import run
 from pathlib import Path
 
 
+
+
+
 # rich
 def create_table(columns=["Notebook Path", "Status", "Run Time", "Colab"], xtra_cols=None) -> Table:
     table = Table(show_header=True, header_style="bold magenta")
+    table.box = box.SQUARE
+    
+    table.border_style = "bright_yellow"
+    table.row_styles = ["none", "dim"]
     for col in columns + listify(xtra_cols):
         table.add_column(col)
+    table.columns[1].style = "cyan"
     return table
 
 
 def remove_rich_format(text):
     "Remove rich fancy coloring"
+    text = str(text)
     res = re.search(r"\](.*?)\[", text)
     if res is None:
         return text
     else:
         return res.group(1)
 
+# log
+class Logger:
+    "A simple logger that logs to a file and the rich console"
+    def __init__(self, columns=["#", "name"], colab=True, out_file="summary.csv", delimiter=";", width=180):
+        self.console = Console(width=width)
+        print(f"CONSOLE.is_terminal(): {self.console.is_terminal}")
 
+        # beautiful rich table
+        self.table = create_table(columns + (["colab"] if colab else []))
+
+        # outfile setup
+        self.log(f"Writing output to {out_file}")
+        self.csv_file = open(out_file, "w", newline="")
+        self.csv_writer = csv.writer(self.csv_file, delimiter=delimiter)
+        self.csv_writer.writerow(columns)
+
+    def log(self, text):
+        self.console.print(text)
+
+    @staticmethod
+    def _format_colab_link(colab_link):
+        return f"[link={colab_link}]open[link]"
+
+    def writerow(self, row, colab_link=None):
+        self.csv_writer.writerow([remove_rich_format(e) for e in row])
+        row = list(row) + [self._format_colab_link(colab_link)]
+        self.table.add_row(*row)
+        
+    def finish(self):
+        self.csv_file.close()
+        self.console.print(self.table)
+        self.console.print("END!")
 # nb
 def is_nb(fname: Path):
     "filter files that are jupyter notebooks"
@@ -37,6 +78,8 @@ def is_nb(fname: Path):
 
 def find_nbs(path: Path):
     "Get all nbs on path recursevely"
+    if is_nb(path):
+        return [path]
     return L([nb for nb in path.rglob("*.ipynb") if is_nb(nb)]).sorted()
 
 
@@ -73,8 +116,6 @@ def search_string_in_nb(nb, string: str = None, cell_type=CellType.code):
     return False
 
 
-
-
 ## Git
 def git_current_branch(fname):
     "Get current git branch"
@@ -103,60 +144,3 @@ def git_local_repo(fname):
         if p.match(f'*/{repo}'):
             break
     return p
-
-
-## colab
-def is_colab():
-    "Check if we are in Colab"
-    if "google.colab" in str(get_ipython()):  # pragma: no cover
-        return True
-    return False
-
-def get_colab_url(fname, branch='main'):
-    "Get git repo url, to append to colab"
-    fname = Path(fname)
-    github_repo = git_origin_repo(fname)
-    fname = fname.relative_to(git_local_repo(fname))
-    return f"https://colab.research.google.com/github/{github_repo}/blob/{branch}/{str(fname)}"
-
-
-def _new_cell(type="code", **kwargs):
-    "Add V4 nbformat type cell"
-    if type == "code":
-        return nbformat.v4.new_code_cell(**kwargs)
-    if type == "markdown":
-        return nbformat.v4.new_markdown_cell(**kwargs)
-
-def _create_colab_cell(url):
-    "Creates a notebook cell with the `Open In Colab` badge"
-    kwargs = {
-        'metadata': {'colab_type': 'text', 'id': 'view-in-github'},
-        'source': f'<a href="{url}" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>'
-        }
-    return _new_cell("markdown", **kwargs)
-
-def _has_colab_badge(nb):
-    "Check if notebook has colab badge, returns the cell position"
-    for i, cell in enumerate(nb["cells"]):
-        if "Open In Colab" in cell["source"]:
-            return i
-    return -1
-
-def _fix_colab_badge(cell):
-    "Fix colab badge metadata"
-    if "Open In Colab" in cell["source"]:
-        cell["metadata"] = {'id': 'view-in-github', 'colab_type': 'text'}
-    return cell
-
-def add_colab_badge(fname, branch='main', idx=0):
-    "Add a badge to Open In Colab in the first cell"
-    notebook = read_nb(fname)
-    url = get_colab_url(fname, branch)
-    idx_colab_badge = _has_colab_badge(notebook)
-    if idx_colab_badge!=-1:
-        colab_cell = notebook["cells"].pop(idx_colab_badge)
-    else:
-        colab_cell = _create_colab_cell(url)
-    colab_cell = _fix_colab_badge(colab_cell)
-    notebook["cells"].insert(idx, colab_cell)
-    return notebook
