@@ -1,10 +1,10 @@
 from pathlib import Path
 
 from nbformat import read
-from tests import TEST_PATH, TEST_NB
+from tests import TEST_PATH, TEST_NB, FAIL_NB
 from nb_helpers.utils import (
     add_colab_badge,
-    is_colab,
+    in_colab,
     is_nb,
     find_nbs,
     git_origin_repo,
@@ -31,7 +31,7 @@ def test_find_nbs():
 
 # colab
 def test_colab():
-    assert not is_colab(), f"We are not in colab"
+    assert not in_colab(), f"We are not in colab"
 
 
 # nb
@@ -51,5 +51,8 @@ def test_colab_badge():
     idx = _has_colab_badge(nb)
     assert idx == 1
     badged_nb = add_colab_badge(TEST_NB)
+    idx = _has_colab_badge(badged_nb)
+    assert idx == 0
+    badged_nb = add_colab_badge(FAIL_NB)
     idx = _has_colab_badge(badged_nb)
     assert idx == 0
