@@ -1,15 +1,11 @@
 # this is for our internal usage
-import csv
 import re
 from pathlib import Path
-from fastcore.script import Param, call_parse, store_true
+from fastcore.script import Param, call_parse
 from fastcore.basics import listify
 
-
-from rich import print
-from rich.console import Console
-
-from nb_helpers.utils import create_table, get_colab_url, remove_rich_format, search_string_in_nb, is_nb, read_nb, find_nbs
+from nb_helpers.utils import git_local_repo, search_string_in_nb, is_nb, read_nb, find_nbs, Logger
+from nb_helpers.colab import get_colab_url
 
 
 WANDB_FEATURES = "Table,sweep,WandbCallback,WandbLogger,Artifact"
@@ -28,7 +24,6 @@ def get_wandb_tracker(nb):
     return ""
 
 
-
 def _search_code(nb, features=WANDB_FEATURES):
     "Search notebook for features"
     present_features = []
@@ -45,34 +40,27 @@ def summary_nbs(
     python_libs: Param("Python lib names to filter, eg: tensorflow. Comma separated", str) = PYTHON_LIBS,
     out_file: Param("Export to csv file", Path) = "summary.csv",
 ):
-    console = Console(width=180)
-    print(f"CONSOLE.is_terminal(): {console.is_terminal}")
     path = Path(path)
-    if is_nb(path):
-        files = [path]
-    else:
-        files = find_nbs(path)
-    print(f"Reading {len(files)} notebooks")
-
     out_file = (path.parent / out_file).with_suffix(".csv")
-    with open(out_file, "w", newline="") as csv_file:
-        csv_writer = csv.writer(csv_file, delimiter=";")
-        print(f"Writing output to {out_file}")
-        csv_writer.writerow(["#", "nb name", "tracker", "wandb features", "python libs"])
+    logger = Logger(columns=["#", "nb name", "tracker", "wandb features", "python libs"], out_file=out_file)
+    
+    files = find_nbs(path)
+    assert len(files)>0, "There is no `ipynb` notebooks in the path you submited"
 
-        # a beautiful rich terminal table
-        table = create_table(["#", "nb name", "tracker", "wandb features", "python libs", "colab"])
+    logger.log(f"Reading {len(files)} notebooks")
 
-        for i, nb_path in enumerate(files):
-            nb = read_nb(nb_path)
-            tracker_id = get_wandb_tracker(nb)
-            fname = nb_path.relative_to(nb_path.parent.parent)
-            features = _search_code(nb, wandb_features)
-            libs = _search_code(nb, python_libs)
-            csv_writer.writerow(
-                [f"{i+1}", str(fname), remove_rich_format(tracker_id), "-".join(features), "-".join(libs)]
-            )
-            colab_link = f"[link={get_colab_url(nb_path)}]open[link]"
-            table.add_row(f"{i+1}", str(fname), tracker_id, ", ".join(features), ", ".join(libs), colab_link)
-        console.print(table)
-        console.print("END!")
+    repo_path = git_local_repo(files[0])
+
+    for i, nb_path in enumerate(files):
+        nb = read_nb(nb_path)
+        tracker_id = get_wandb_tracker(nb)
+        fname = nb_path.relative_to(repo_path)
+        features = _search_code(nb, wandb_features)
+        libs = _search_code(nb, python_libs)
+        
+        row = [f"{i+1}", str(fname), tracker_id, ", ".join(features), ", ".join(libs)]
+        colab_link = get_colab_url(nb_path)
+        logger.writerow(row, colab_link)
+    
+    logger.finish()
+
