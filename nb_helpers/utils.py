@@ -13,14 +13,11 @@ from fastcore.xtras import run
 from pathlib import Path
 
 
-
-
-
 # rich
 def create_table(columns=["Notebook Path", "Status", "Run Time", "Colab"], xtra_cols=None) -> Table:
     table = Table(show_header=True, header_style="bold magenta")
     table.box = box.SQUARE
-    
+
     table.border_style = "bright_yellow"
     table.row_styles = ["none", "dim"]
     for col in columns + listify(xtra_cols):
@@ -38,9 +35,11 @@ def remove_rich_format(text):
     else:
         return res.group(1)
 
+
 # log
 class Logger:
     "A simple logger that logs to a file and the rich console"
+
     def __init__(self, columns=["#", "name"], colab=True, out_file="summary.csv", delimiter=";", width=180):
         self.console = Console(width=width)
         print(f"CONSOLE.is_terminal(): {self.console.is_terminal}")
@@ -65,11 +64,13 @@ class Logger:
         self.csv_writer.writerow([remove_rich_format(e) for e in row])
         row = list(row) + [self._format_colab_link(colab_link)]
         self.table.add_row(*row)
-        
+
     def finish(self):
         self.csv_file.close()
         self.console.print(self.table)
         self.console.print("END!")
+
+
 # nb
 def is_nb(fname: Path):
     "filter files that are jupyter notebooks"
@@ -97,6 +98,7 @@ def read_nb(fname: Union[Path, str]) -> NotebookNode:
     with open(Path(fname), "r", encoding="utf8") as f:
         return nbformat.reads(f.read(), as_version=4)
 
+
 def save_nb(notebook, fname: Union[Path, str]):
     "Dump `notebook` to `fname`"
     nbformat.write(notebook, str(fname), version=4)
@@ -121,11 +123,12 @@ def git_current_branch(fname):
     "Get current git branch"
     return run(f"git -C {Path(fname).parent} symbolic-ref --short HEAD")
 
+
 def git_origin_repo(fname):
     "Get github repo name from `fname`"
     try:
         repo_url = run(f"git -C {Path(fname).parent} config --get remote.origin.url")
-        
+
         # check if ssh or html
         if "git@" in repo_url:
             github_repo = re.search(r":(.*?).git", repo_url).group(1)
@@ -137,10 +140,11 @@ def git_origin_repo(fname):
         print(f"Probably not in a git repo: {e}")
         return ""
 
+
 def git_local_repo(fname):
     "Get local github repo path"
     repo = git_origin_repo(fname)
     for p in fname.parents:
-        if p.match(f'*/{repo}'):
+        if p.match(f"*/{repo}"):
             break
     return p

@@ -43,9 +43,9 @@ def summary_nbs(
     path = Path(path)
     out_file = (path.parent / out_file).with_suffix(".csv")
     logger = Logger(columns=["#", "nb name", "tracker", "wandb features", "python libs"], out_file=out_file)
-    
+
     files = find_nbs(path)
-    assert len(files)>0, "There is no `ipynb` notebooks in the path you submited"
+    assert len(files) > 0, "There is no `ipynb` notebooks in the path you submited"
 
     logger.log(f"Reading {len(files)} notebooks")
 
@@ -57,10 +57,9 @@ def summary_nbs(
         fname = nb_path.relative_to(repo_path)
         features = _search_code(nb, wandb_features)
         libs = _search_code(nb, python_libs)
-        
+
         row = [f"{i+1}", str(fname), tracker_id, ", ".join(features), ", ".join(libs)]
         colab_link = get_colab_url(nb_path)
         logger.writerow(row, colab_link)
-    
-    logger.finish()
 
+    logger.finish()

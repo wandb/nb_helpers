@@ -12,7 +12,8 @@ def in_colab():
         return True
     return False
 
-def get_colab_url(fname, branch='main'):
+
+def get_colab_url(fname, branch="main"):
     "Get git repo url, to append to colab"
     fname = Path(fname)
     github_repo = git_origin_repo(fname)
@@ -27,13 +28,15 @@ def _new_cell(type="code", **kwargs):
     if type == "markdown":
         return nbformat.v4.new_markdown_cell(**kwargs)
 
+
 def _create_colab_cell(url):
     "Creates a notebook cell with the `Open In Colab` badge"
     kwargs = {
-        'metadata': {'colab_type': 'text', 'id': 'view-in-github'},
-        'source': f'<a href="{url}" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>'
-        }
+        "metadata": {"colab_type": "text", "id": "view-in-github"},
+        "source": f'<a href="{url}" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>',
+    }
     return _new_cell("markdown", **kwargs)
+
 
 def _has_colab_badge(nb):
     "Check if notebook has colab badge, returns the cell position"
@@ -42,18 +45,20 @@ def _has_colab_badge(nb):
             return i
     return -1
 
+
 def _add_colab_metadata(cell):
     "Fix colab badge metadata"
     if "Open In Colab" in cell["source"]:
-        cell["metadata"] = {'id': 'view-in-github', 'colab_type': 'text'}
+        cell["metadata"] = {"id": "view-in-github", "colab_type": "text"}
     return cell
 
-def add_colab_badge(fname, branch='main', idx=0):
+
+def add_colab_badge(fname, branch="main", idx=0):
     "Add a badge to Open In Colab in the `idx` cell"
     notebook = read_nb(fname)
     url = get_colab_url(fname, branch)
     idx_colab_badge = _has_colab_badge(notebook)
-    if idx_colab_badge!=-1:
+    if idx_colab_badge != -1:
         colab_cell = notebook["cells"].pop(idx_colab_badge)
     else:
         colab_cell = _create_colab_cell(url)
