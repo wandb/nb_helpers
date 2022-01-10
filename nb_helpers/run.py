@@ -8,10 +8,10 @@ from fastcore.basics import listify
 import nbformat
 from fastcore.script import *
 from rich import print as pprint
-from rich.console import Console
 from rich.progress import track
 
-from nb_helpers.utils import find_nbs, git_origin_repo, is_nb, search_string_in_nb, read_nb, create_table
+from nb_helpers.utils import find_nbs, search_string_in_nb, read_nb, Logger
+from nb_helpers.colab import get_colab_url
 from nb_helpers.nbdev_test import NoExportPreprocessor, get_all_flags
 
 FEATURES = ["Path", "os", "chain", "Union", "sleep"]
@@ -25,13 +25,12 @@ STATUS = SimpleNamespace(
 )
 
 
-def _format_row(fname: Path, status: str, time: str, github_repo: str, xtra_col=None) -> tuple:
+def _format_row(fname: Path, status: str, time: str, xtra_col=None) -> tuple:
     "Format one row for a rich.Table"
 
     formatted_status = getattr(STATUS, status.lower())
-    link = f"[link=https://colab.research.google.com/{github_repo}/{str(fname)}]open[link]"
 
-    row = (str(fname), formatted_status, f"{int(time)} s", link)
+    row = (str(fname), formatted_status, f"{int(time)} s")
     if len(listify(xtra_col)) > 0:
         row += (str(xtra_col),)
     return row
@@ -67,7 +66,6 @@ def run_one(
     no_run: bool = False,
 ):
     "Run nb `fname` and timeit, recover exception"
-    github_repo = git_origin_repo(fname)
     start = time.time()
     did_run, skip, error = False, False, None
     flags = listify(flags)
@@ -79,7 +77,7 @@ def run_one(
         skip = skip_nb(notebook, flags, lib_name)
 
         if skip or no_run:
-            return _format_row(fname, "skip", time.time() - start, github_repo), None
+            return _format_row(fname, "skip", time.time() - start), None
         else:
             did_run = exec_nb(notebook, flags, timeout)
     except Exception as e:
@@ -88,7 +86,7 @@ def run_one(
             error = e
         error = e
     return (
-        _format_row(fname, "ok" if did_run else "fail", time.time() - start, github_repo),
+        _format_row(fname, "ok" if did_run else "fail", time.time() - start),
         error,
     )
 
@@ -103,24 +101,18 @@ def run_nbs(
     no_run: Param("Do not run any notebook", store_true) = False,
     post_issue: Param("Post the failure in github", store_true) = False,
 ):
-    console = Console(width=180)
-    print(f"CONSOLE.is_terminal(): {console.is_terminal}")
-    table = create_table()
+    logger = Logger(columns=["Notebook Path", "Status", "Run Time"], out_file="run.csv")
     path = Path(path)
-    if is_nb(path):
-        files = [path]
-    else:
-        files = find_nbs(path)
-    pprint(f"Testing {len(files)} notebooks")
+    files = find_nbs(path)
+
     failed_nbs = {}
-    for nb in track(files, description="Running nbs..."):
-        row, e = run_one(nb, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name, no_run=no_run)
-        pprint(f" > {row[0]:80} | {row[1]:40} | {row[2]:5} | {row[3]}")
-        table.add_row(*row)
+    for nb_path in track(files, description="Running nbs..."):
+        row, e = run_one(nb_path, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name, no_run=no_run)
+        pprint(f" > {row[0]:80} | {row[1]:40} | {row[2]:5} ")
+        logger.writerow(row, colab_link=get_colab_url(nb_path))
         time.sleep(0.1)
         if e is not None:
-            failed_nbs[str(nb)] = e
-    console.print(table)
-    console.print("END!")
+            failed_nbs[str(nb_path)] = e
 
+    logger.finish()
     return failed_nbs
