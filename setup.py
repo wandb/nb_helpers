@@ -18,6 +18,7 @@ setuptools.setup(
             "clean_nbs=nb_helpers.clean:clean_nbs",
             "run_nbs=nb_helpers.run:run_nbs",
             "summary_nbs=nb_helpers.wandb:summary_nbs",
+            "fix_nbs=nb_helpers.wandb:fix_nbs",
         ]
     },
 )
