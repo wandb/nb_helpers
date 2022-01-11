@@ -79,6 +79,7 @@ def is_nb(fname: Path):
 
 def find_nbs(path: Path):
     "Get all nbs on path recursevely"
+    path = Path(path)
     if is_nb(path):
         return [path]
     return L([nb for nb in path.rglob("*.ipynb") if is_nb(nb)]).sorted()
@@ -99,7 +100,7 @@ def read_nb(fname: Union[Path, str]) -> NotebookNode:
         return nbformat.reads(f.read(), as_version=4)
 
 
-def save_nb(notebook, fname: Union[Path, str]):
+def write_nb(notebook, fname: Union[Path, str]):
     "Dump `notebook` to `fname`"
     nbformat.write(notebook, str(fname), version=4)
 
@@ -140,11 +141,16 @@ def git_origin_repo(fname):
         print(f"Probably not in a git repo: {e}")
         return ""
 
-
 def git_local_repo(fname):
     "Get local github repo path"
+    fname = Path(fname)
     repo = git_origin_repo(fname)
     for p in fname.parents:
         if p.match(f"*/{repo}"):
             break
     return p
+
+def git_last_commit(fname, branch="master"):
+    "Gets the last commit on fname"
+    commit_id = run(f"git rev-list -1 {branch} {fname}")
+    return commit_id
