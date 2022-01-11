@@ -53,7 +53,7 @@ def _add_colab_metadata(cell):
     return cell
 
 
-def add_colab_badge(fname, branch="main", idx=0):
+def add_colab_badge(fname, branch="main", idx=0, meta=True):
     "Add a badge to Open In Colab in the `idx` cell"
     notebook = read_nb(fname)
     url = get_colab_url(fname, branch)
@@ -62,6 +62,7 @@ def add_colab_badge(fname, branch="main", idx=0):
         colab_cell = notebook["cells"].pop(idx_colab_badge)
     else:
         colab_cell = _create_colab_cell(url)
-    colab_cell = _add_colab_metadata(colab_cell)
+    if meta:
+        colab_cell = _add_colab_metadata(colab_cell)
     notebook["cells"].insert(idx, colab_cell)
     return notebook
