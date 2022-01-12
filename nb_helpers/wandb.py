@@ -87,9 +87,8 @@ def fix_nbs(
     files = find_nbs(path)
     assert len(files) > 0, "There is no `ipynb` notebooks in the path you submited"
 
-    for i, nb_path in enumerate(files):
-        if colab_cell_idx != -1:
-            print(f"Add colab badge to {nb_path}")
-            nb = read_nb(nb_path)
-            nb = add_colab_badge(nb, nb_path, branch=branch, idx=colab_cell_idx)
-            write_nb(nb, nb_path)
+    for nb_path in files:
+        print(f"Add colab badge to {nb_path}")
+        nb = read_nb(nb_path)
+        nb = add_colab_badge(nb, nb_path, branch=branch, idx=colab_cell_idx)
+        write_nb(nb, nb_path)

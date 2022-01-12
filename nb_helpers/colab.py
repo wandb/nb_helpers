@@ -32,6 +32,7 @@ def _new_cell(type="code", **kwargs):
 
 _badge_meta = {"id": "view-in-github", "colab_type": "text"}
 
+
 def _create_colab_cell(url, meta={}):
     "Creates a notebook cell with the `Open In Colab` badge"
     kwargs = {
@@ -51,13 +52,12 @@ def _has_colab_badge(nb):
 
 
 def create_colab_badge_cell(fname, branch=None, meta={}):
-    "Create a colab badge cell from `fname`" 
+    "Create a colab badge cell from `fname`"
     # get main/master name
     branch = ifnone(branch, git_main_name(fname))
     url = get_colab_url(fname, branch)
     colab_cell = _create_colab_cell(url, meta)
     return colab_cell
-
 
 
 def add_colab_badge(notebook, fname, branch=None, idx=0, meta={}):
