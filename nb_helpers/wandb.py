@@ -6,7 +6,7 @@ from fastcore.basics import listify
 import nbformat
 
 
-from nb_helpers.utils import git_local_repo, search_string_in_nb, read_nb, find_nbs, Logger, write_nb
+from nb_helpers.utils import git_local_repo, search_string_in_nb, read_nb, find_nbs, RichLogger, write_nb
 from nb_helpers.colab import add_colab_badge, get_colab_url, _has_colab_badge
 
 
@@ -45,7 +45,7 @@ def summary_nbs(
 ):
     path = Path(path)
     out_file = (path.parent / out_file).with_suffix(".csv")
-    logger = Logger(
+    logger = RichLogger(
         columns=["#", "nb name", "tracker", "wandb features", "python libs", "colab_cell"], out_file=out_file
     )
 

@@ -37,7 +37,7 @@ def remove_rich_format(text):
 
 
 # log
-class Logger:
+class RichLogger:
     "A simple logger that logs to a file and the rich console"
 
     def __init__(self, columns=["#", "name"], colab=True, out_file="summary.csv", delimiter=";", width=180):

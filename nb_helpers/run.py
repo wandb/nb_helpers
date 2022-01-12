@@ -10,7 +10,7 @@ from fastcore.script import *
 from rich import print as pprint
 from rich.progress import track
 
-from nb_helpers.utils import find_nbs, search_string_in_nb, read_nb, Logger
+from nb_helpers.utils import find_nbs, search_string_in_nb, read_nb, RichLogger
 from nb_helpers.colab import get_colab_url
 from nb_helpers.nbdev_test import NoExportPreprocessor, get_all_flags
 
@@ -101,7 +101,7 @@ def run_nbs(
     no_run: Param("Do not run any notebook", store_true) = False,
     post_issue: Param("Post the failure in github", store_true) = False,
 ):
-    logger = Logger(columns=["Notebook Path", "Status", "Run Time"], out_file="run.csv")
+    logger = RichLogger(columns=["Notebook Path", "Status", "Run Time"], out_file="run.csv")
     path = Path(path)
     files = find_nbs(path)
 
