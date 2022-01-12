@@ -15,10 +15,10 @@ setuptools.setup(
     zip_safe=False,
     entry_points={
         "console_scripts": [
-            "clean_nbs=nb_helpers.clean:clean_nbs",
-            "run_nbs=nb_helpers.run:run_nbs",
-            "summary_nbs=nb_helpers.wandb:summary_nbs",
-            "fix_nbs=nb_helpers.wandb:fix_nbs",
+            "nb_helpers.clean_nbs=nb_helpers.clean:clean_nbs",
+            "nb_helpers.run_nbs=nb_helpers.run:run_nbs",
+            "nb_helpers.summary_nbs=nb_helpers.wandb:summary_nbs",
+            "nb_helpers.fix_nbs=nb_helpers.wandb:fix_nbs",
         ]
     },
 )

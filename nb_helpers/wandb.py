@@ -41,7 +41,6 @@ def summary_nbs(
     wandb_features: Param("wandb features to identify, comma separated", str) = WANDB_FEATURES,
     python_libs: Param("Python lib names to filter, eg: tensorflow. Comma separated", str) = PYTHON_LIBS,
     out_file: Param("Export to csv file", Path) = "summary.csv",
-    fix_colab_cell_idx: Param("Cell idx where the colab badge must go", int) = -1,
 ):
     path = Path(path)
     out_file = (path.parent / out_file).with_suffix(".csv")
@@ -90,7 +89,7 @@ def fix_nbs(
 
     for i, nb_path in enumerate(files):
         if colab_cell_idx != -1:
-            print(f"Add badge to {nb_path}")
+            print(f"Add colab badge to {nb_path}")
             nb = read_nb(nb_path)
             nb = add_colab_badge(nb, nb_path, branch=branch, idx=colab_cell_idx)
             write_nb(nb, nb_path)
