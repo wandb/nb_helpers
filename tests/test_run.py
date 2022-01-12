@@ -1,4 +1,4 @@
-from tests import TEST_NB, FAIL_NB, SKIP_NB, FLAG_NB
+from tests import TEST_NB, FAIL_NB, SKIP_NB, FLAG_NB, TEST_PATH
 from nb_helpers.run import STATUS, run_nbs, run_one
 
 
@@ -40,7 +40,3 @@ def test_run_one():
     # should run cause it's flagged as slow
     row, _ = run_one(FLAG_NB, flags="slow")
     assert row[1] == STATUS.ok, f"Error, the notebooks produces {_STATUS[row[1]]}!=ok"
-
-
-def test_run_all():
-    run_nbs()
