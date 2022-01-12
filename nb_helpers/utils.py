@@ -125,6 +125,12 @@ def git_current_branch(fname):
     return run(f"git -C {Path(fname).parent} symbolic-ref --short HEAD")
 
 
+def git_main_name(fname):
+    "Get the name of master/main branch"
+    branches = run(f"git -C {Path(fname).parent} branch")
+    return "main" if "main" in branches else "master"
+
+
 def git_origin_repo(fname):
     "Get github repo name from `fname`"
     try:

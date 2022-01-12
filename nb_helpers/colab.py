@@ -1,9 +1,10 @@
 from pathlib import Path
 from IPython import get_ipython
+from fastcore.basics import ifnone
 
 import nbformat
 
-from nb_helpers.utils import git_origin_repo, read_nb, git_local_repo
+from nb_helpers.utils import git_main_name, git_origin_repo, read_nb, git_local_repo
 
 ## colab
 def in_colab():
@@ -29,43 +30,42 @@ def _new_cell(type="code", **kwargs):
         return nbformat.v4.new_markdown_cell(**kwargs)
 
 
-def _create_colab_cell(url):
+_badge_meta = {"id": "view-in-github", "colab_type": "text"}
+
+def _create_colab_cell(url, meta={}):
     "Creates a notebook cell with the `Open In Colab` badge"
     kwargs = {
-        "metadata": {"colab_type": "text", "id": "view-in-github"},
+        "cell_type": "markdown",
+        "metadata": meta,
         "source": f'<a href="{url}" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>',
     }
     return _new_cell("markdown", **kwargs)
 
 
 def _has_colab_badge(nb):
-    "Check if notebook has colab badge, returns the cell position"
+    "Check if notebook has colab badge, returns the cell position, -1 if not present"
     for i, cell in enumerate(nb["cells"]):
         if "Open In Colab" in cell["source"]:
             return i
     return -1
 
 
-_badge_meta = {"id": "view-in-github", "colab_type": "text"}
-
-
-def _add_colab_metadata(cell, meta=_badge_meta):
-    "Fix colab badge metadata"
-    if "Open In Colab" in cell["source"]:
-        cell["metadata"] = meta
-    return cell
-
-
-def add_colab_badge(fname, branch="main", idx=0, meta=_badge_meta):
-    "Add a badge to Open In Colab in the `idx` cell"
-    notebook = read_nb(fname)
+def create_colab_badge_cell(fname, branch=None, meta={}):
+    "Create a colab badge cell from `fname`" 
+    # get main/master name
+    branch = ifnone(branch, git_main_name(fname))
     url = get_colab_url(fname, branch)
+    colab_cell = _create_colab_cell(url, meta)
+    return colab_cell
+
+
+
+def add_colab_badge(notebook, fname, branch=None, idx=0, meta={}):
+    "Add a badge to Open In Colab in the `idx` cell"
     idx_colab_badge = _has_colab_badge(notebook)
     if idx_colab_badge != -1:
         colab_cell = notebook["cells"].pop(idx_colab_badge)
     else:
-        colab_cell = _create_colab_cell(url)
-    if meta:
-        colab_cell = _add_colab_metadata(colab_cell, _badge_meta)
+        colab_cell = create_colab_badge_cell(fname, branch, meta)
     notebook["cells"].insert(idx, colab_cell)
     return notebook

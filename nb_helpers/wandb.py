@@ -80,9 +80,8 @@ def summary_nbs(
 @call_parse
 def fix_nbs(
     path: Param("A path to nb files", str) = ".",
-    colab_cell_idx: Param("Cell idx where the colab badge must go", int) = -1,
-    colab_meta: Param("Add metadata to hide colab badge on colab", store_true) = False,
-    branch: Param("The branch", str) = "main",
+    colab_cell_idx: Param("Cell idx where the colab badge must go", int) = 1,
+    branch: Param("The branch", str) = None,
 ):
 
     path = Path(path)
@@ -92,5 +91,6 @@ def fix_nbs(
     for i, nb_path in enumerate(files):
         if colab_cell_idx != -1:
             print(f"Add badge to {nb_path}")
-            nb = add_colab_badge(nb_path, branch=branch, idx=colab_cell_idx, meta=colab_meta)
+            nb = read_nb(nb_path)
+            nb = add_colab_badge(nb, nb_path, branch=branch, idx=colab_cell_idx)
             write_nb(nb, nb_path)
