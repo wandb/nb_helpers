@@ -40,7 +40,3 @@ def test_run_one():
     # should run cause it's flagged as slow
     row, _ = run_one(FLAG_NB, flags="slow")
     assert row[1] == STATUS.ok, f"Error, the notebooks produces {_STATUS[row[1]]}!=ok"
-
-
-def test_run_all():
-    _ = run_nbs(TEST_PATH)
