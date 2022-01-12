@@ -45,15 +45,16 @@ def _has_colab_badge(nb):
             return i
     return -1
 
+_badge_meta = {"id": "view-in-github", "colab_type": "text"}
 
-def _add_colab_metadata(cell):
+def _add_colab_metadata(cell, meta=_badge_meta):
     "Fix colab badge metadata"
     if "Open In Colab" in cell["source"]:
-        cell["metadata"] = {"id": "view-in-github", "colab_type": "text"}
+        cell["metadata"] = meta
     return cell
 
 
-def add_colab_badge(fname, branch="main", idx=0, meta=True):
+def add_colab_badge(fname, branch="main", idx=0, meta=_badge_meta):
     "Add a badge to Open In Colab in the `idx` cell"
     notebook = read_nb(fname)
     url = get_colab_url(fname, branch)
@@ -63,6 +64,6 @@ def add_colab_badge(fname, branch="main", idx=0, meta=True):
     else:
         colab_cell = _create_colab_cell(url)
     if meta:
-        colab_cell = _add_colab_metadata(colab_cell)
+        colab_cell = _add_colab_metadata(colab_cell, _badge_meta)
     notebook["cells"].insert(idx, colab_cell)
     return notebook
