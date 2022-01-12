@@ -1,7 +1,7 @@
 # this is for our internal usage
 import re
 from pathlib import Path
-from fastcore.script import Param, call_parse
+from fastcore.script import Param, call_parse, store_true
 from fastcore.basics import listify
 import nbformat
 
@@ -69,9 +69,11 @@ def summary_nbs(
 
 @call_parse
 def fix_nbs(
-    path: Param("A path to nb files", str) = ".",
+    path:           Param("A path to nb files", str) = ".",
     colab_cell_idx: Param("Cell idx where the colab badge must go", int) = -1,
-    branch: Param("The branch", str) = "main",
+    colab_meta:     Param("Add metadata to hide colab badge on colab", store_true) = False,
+    branch:         Param("The branch", str) = "main",
+
 ):
 
     path = Path(path)
@@ -81,5 +83,5 @@ def fix_nbs(
     for i, nb_path in enumerate(files):
         if colab_cell_idx != -1:
             print(f"Add badge to {nb_path}")
-            nb = add_colab_badge(nb_path, branch=branch, idx=colab_cell_idx)
+            nb = add_colab_badge(nb_path, branch=branch, idx=colab_cell_idx, meta=colab_meta)
             write_nb(nb, nb_path)
