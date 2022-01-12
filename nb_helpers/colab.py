@@ -45,7 +45,9 @@ def _has_colab_badge(nb):
             return i
     return -1
 
+
 _badge_meta = {"id": "view-in-github", "colab_type": "text"}
+
 
 def _add_colab_metadata(cell, meta=_badge_meta):
     "Fix colab badge metadata"

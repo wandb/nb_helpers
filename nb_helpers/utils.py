@@ -141,6 +141,7 @@ def git_origin_repo(fname):
         print(f"Probably not in a git repo: {e}")
         return ""
 
+
 def git_local_repo(fname):
     "Get local github repo path"
     fname = Path(fname)
@@ -149,6 +150,7 @@ def git_local_repo(fname):
         if p.match(f"*/{repo}"):
             break
     return p
+
 
 def git_last_commit(fname, branch="master"):
     "Gets the last commit on fname"

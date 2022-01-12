@@ -45,7 +45,9 @@ def summary_nbs(
 ):
     path = Path(path)
     out_file = (path.parent / out_file).with_suffix(".csv")
-    logger = Logger(columns=["#", "nb name", "tracker", "wandb features", "python libs", "colab_cell"], out_file=out_file)
+    logger = Logger(
+        columns=["#", "nb name", "tracker", "wandb features", "python libs", "colab_cell"], out_file=out_file
+    )
 
     files = find_nbs(path)
     assert len(files) > 0, "There is no `ipynb` notebooks in the path you submited"
@@ -61,19 +63,26 @@ def summary_nbs(
         features = search_code(nb, wandb_features)
         libs = search_code(nb, python_libs)
         colab_cell_idx = _has_colab_badge(nb)
-        row = [f"{i+1}", str(fname), tracker_id, ", ".join(features), ", ".join(libs), str(colab_cell_idx) if colab_cell_idx!=-1 else "" ]
+        row = [
+            f"{i+1}",
+            str(fname),
+            tracker_id,
+            ", ".join(features),
+            ", ".join(libs),
+            str(colab_cell_idx) if colab_cell_idx != -1 else "",
+        ]
         colab_link = get_colab_url(nb_path)
         logger.writerow(row, colab_link)
 
     logger.finish()
 
+
 @call_parse
 def fix_nbs(
-    path:           Param("A path to nb files", str) = ".",
+    path: Param("A path to nb files", str) = ".",
     colab_cell_idx: Param("Cell idx where the colab badge must go", int) = -1,
-    colab_meta:     Param("Add metadata to hide colab badge on colab", store_true) = False,
-    branch:         Param("The branch", str) = "main",
-
+    colab_meta: Param("Add metadata to hide colab badge on colab", store_true) = False,
+    branch: Param("The branch", str) = "main",
 ):
 
     path = Path(path)
