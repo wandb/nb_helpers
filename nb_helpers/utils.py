@@ -48,6 +48,7 @@ class Logger:
         self.table = create_table(columns + (["colab"] if colab else []))
 
         # outfile setup
+        out_file = Path("logs")/out_file
         self.log(f"Writing output to {out_file}")
         self.csv_file = open(out_file, "w", newline="")
         self.csv_writer = csv.writer(self.csv_file, delimiter=delimiter)
