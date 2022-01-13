@@ -1,5 +1,5 @@
 rich
 nbdev
-
+nbformat
 fastcore
 fastprogress
