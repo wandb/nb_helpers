@@ -21,4 +21,5 @@ jobs:
         if [ -n "$(git status -uno -s)" ]; then echo -e "!!! Detected unstripped out notebooks\n!!!Remember to run nb_helpers.clean_nbs"; false; fi
     - name: Summary
       run: |
+        echo $PWD
         nb_helpers.summary_nbs

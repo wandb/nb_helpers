@@ -48,10 +48,10 @@ class RichLogger:
         self.table = create_table(columns + (["colab"] if colab else []))
 
         # outfile setup
-        logs_folder = git_local_repo(list(Path.cwd().iterdir())[0]) / "logs"
-        if not logs_folder.exists():
-            logs_folder.mkdir()
-        out_file = logs_folder / out_file
+        # logs_folder = git_local_repo(list(Path.cwd().iterdir())[0]) / "logs"
+        # if not logs_folder.exists():
+        #     logs_folder.mkdir()
+        # out_file = logs_folder / out_file
         self.log(f"Writing output to {out_file}")
         self.csv_file = open(out_file, "w", newline="")
         self.csv_writer = csv.writer(self.csv_file, delimiter=delimiter)
