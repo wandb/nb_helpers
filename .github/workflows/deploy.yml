@@ -20,7 +20,7 @@ jobs:
         git status -s # display the status to see which nbs need cleaning up
         if [ -n "$(git status -uno -s)" ]; then echo -e "!!! Detected unstripped out notebooks\n!!!Remember to run nb_helpers.clean_nbs"; false; fi
     - name: Summary
-      run: nb_helpers.summary_nbs --path=tests
+      run: nb_helpers.summary_nbs --path=tests --html
     - name: Archive summary logs
       uses: actions/upload-artifact@v2
       with:
