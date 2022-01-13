@@ -1,8 +1,7 @@
 #;nb name;tracker;wandb features;python libs;colab_cell
-1;dev_nbs/search.ipynb;;;;1
-2;tests/data/dummy_folder/fail_nb.ipynb;;;;
-3;tests/data/dummy_folder/test_nb2.ipynb;;;;
-4;tests/data/dummy_folder/test_nb_all_slow.ipynb;;;;
-5;tests/data/dummy_folder/test_nb_some_slow.ipynb;;;;
-6;tests/data/features_nb.ipynb;;;;
-7;tests/data/test_nb.ipynb;0: tracker;;;1
+1;tests/data/dummy_folder/fail_nb.ipynb;;;;
+2;tests/data/dummy_folder/test_nb2.ipynb;;;;
+3;tests/data/dummy_folder/test_nb_all_slow.ipynb;;;time;
+4;tests/data/dummy_folder/test_nb_some_slow.ipynb;;;time;
+5;tests/data/features_nb.ipynb;;;typing, itertools;
+6;tests/data/test_nb.ipynb;0: tracker;;os, sys, logging, pathlib, fastcore, itertools;1
