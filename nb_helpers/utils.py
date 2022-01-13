@@ -112,15 +112,57 @@ def write_nb(notebook, fname: Union[Path, str]):
 CellType = SimpleNamespace(code="code", md="markdown")
 
 
-def search_string_in_nb(nb, string: str = None, cell_type=CellType.code):
-    "Search string in notebook code cells, you can pass comma separated strings"
-    strings = ifnone(string, "").split(",")
+def search_cells(nb, string: str = None, cell_type=CellType.code):
+    "Get cells containing string, you can pass comma separated strings"
+    strings = ifnone(string, "").replace(" ", "").split(",")
+    cells = []
     for cell in nb["cells"]:
         if cell["cell_type"] == cell_type:
-            for string in strings:
-                if string in cell["source"]:
-                    return True
-    return False
+            if any([string in cell["source"] for string in strings]):
+                cells.append(cell["source"])
+    return cells
+
+
+def search_string_in_nb(nb, string: str = None, cell_type=CellType.code):
+    "Check if string is present in notebook cells, you can pass comma separated strings"
+    return len(search_cells(nb, string, cell_type)) > 0
+
+
+def extract_libs(strings):
+    "Automatically detect libraries imported in `strings`"
+
+    after_import_regex = re.compile(r"^import\s([^\.]*)", re.VERBOSE)
+    before_as_regex = re.compile(r"([^\s]*?)\sas\s", re.VERBOSE)
+    between_from_import_regex = re.compile(r"^from\s(.*?)\simport", re.VERBOSE)
+
+    def _search_with_regex(regex, string):
+        res = regex.search(string)
+        if res is not None:
+            return res.group(1)
+        else:
+            return ""
+
+    libs = []
+    for string in strings:
+        if "from" in string:
+            string = _search_with_regex(between_from_import_regex, string).split(".")[0]
+        else:
+            string = _search_with_regex(after_import_regex, string)
+            if "as" in string:
+                string = _search_with_regex(before_as_regex, string)
+        libs.append(string.replace(" ", "").split(","))
+    return L(libs).concat()
+
+
+def detect_imported_libs(notebook):
+    "Guess imported libs from notebook"
+    text_list = search_cells(notebook, "import,from")
+
+    # format lines
+    text_list = L([x.split("\n") for x in text_list]).concat()
+    text_list = [line for line in text_list if (("from" in line) or ("import" in line))]
+
+    return extract_libs(text_list)
 
 
 ## Git

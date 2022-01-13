@@ -1,24 +1,69 @@
-import setuptools
+from pkg_resources import parse_version
+from configparser import ConfigParser
+import setuptools, re, sys
 
+assert parse_version(setuptools.__version__) >= parse_version("36.2")
 
-lib_name = "nb_helpers"
-min_python = "3.7"
+# note: all settings are in settings.ini; edit there, not here
+config = ConfigParser(delimiters=["="])
+config.read("settings.ini")
+cfg = config["DEFAULT"]
+
+cfg_keys = "version description keywords author author_email".split()
+expected = cfg_keys + "lib_name user branch license status min_python audience language".split()
+for o in expected:
+    assert o in cfg, "missing expected setting: {}".format(o)
+setup_cfg = {o: cfg[o] for o in cfg_keys}
+
+if len(sys.argv) > 1 and sys.argv[1] == "version":
+    print(setup_cfg["version"])
+    exit()
+
+licenses = {
+    "apache2": ("Apache Software License 2.0", "OSI Approved :: Apache Software License"),
+    "mit": ("MIT License", "OSI Approved :: MIT License"),
+}
+statuses = [
+    "1 - Planning",
+    "2 - Pre-Alpha",
+    "3 - Alpha",
+    "4 - Beta",
+    "5 - Production/Stable",
+    "6 - Mature",
+    "7 - Inactive",
+]
+py_versions = "3.6 3.7 3.8 3.9 3.10".split()
+min_python = cfg["min_python"]
+lic = licenses[cfg["license"]]
+
+requirements = ["pip", "packaging"]
+if cfg.get("requirements"):
+    requirements += cfg.get("requirements", "").split()
+if cfg.get("pip_requirements"):
+    requirements += cfg.get("pip_requirements", "").split()
+dev_requirements = (cfg.get("dev_requirements") or "").split()
+
+long_description = open("README.md").read()
 
 setuptools.setup(
-    name="nb_helpers",
+    name=cfg["lib_name"],
+    license=lic[0],
+    classifiers=[
+        "Development Status :: " + statuses[int(cfg["status"])],
+        "Intended Audience :: " + cfg["audience"].title(),
+        "License :: " + lic[1],
+        "Natural Language :: " + cfg["language"].title(),
+    ]
+    + ["Programming Language :: Python :: " + o for o in py_versions[py_versions.index(min_python) :]],
+    url=cfg["git_url"],
     packages=setuptools.find_packages(),
     include_package_data=True,
-    install_requires=["rich", "fastcore", "fastprogress", "nbdev"],
-    python_requires=">=" + "3.7",
-    long_description=open("README.md").read(),
+    install_requires=requirements,
+    extras_require={"dev": dev_requirements},
+    python_requires=">=" + cfg["min_python"],
+    long_description=long_description,
     long_description_content_type="text/markdown",
     zip_safe=False,
-    entry_points={
-        "console_scripts": [
-            "nb_helpers.clean_nbs=nb_helpers.clean:clean_nbs",
-            "nb_helpers.run_nbs=nb_helpers.run:run_nbs",
-            "nb_helpers.summary_nbs=nb_helpers.wandb:summary_nbs",
-            "nb_helpers.fix_nbs=nb_helpers.wandb:fix_nbs",
-        ]
-    },
+    entry_points={"console_scripts": cfg.get("console_scripts", "").split()},
+    **setup_cfg
 )

@@ -2,7 +2,15 @@ from pathlib import Path
 
 from nbformat import read
 from tests import TEST_PATH, TEST_NB, FAIL_NB
-from nb_helpers.utils import is_nb, find_nbs, git_origin_repo, read_nb, search_string_in_nb
+from nb_helpers.utils import (
+    detect_imported_libs,
+    extract_libs,
+    is_nb,
+    find_nbs,
+    git_origin_repo,
+    read_nb,
+    search_string_in_nb,
+)
 from nb_helpers.colab import in_colab, _has_colab_badge, add_colab_badge
 
 
@@ -50,3 +58,25 @@ def test_colab_badge():
     badged_nb = add_colab_badge(fail_nb, FAIL_NB)
     idx = _has_colab_badge(badged_nb)
     assert idx == 0
+
+
+def test_guess_libs():
+    strings = [
+        "import tensorflow as tf",
+        "import tf.keras as K",
+        "import numpy",
+        "import sys, os",
+        "from fastcore.basics import ifnone",
+    ]
+    res = extract_libs(strings)
+    assert res == ["tensorflow", "tf", "numpy", "sys", "os", "fastcore"]
+
+
+def test_detect_libs():
+    nb = read_nb(TEST_NB)
+    libs = detect_imported_libs(nb)
+    assert libs == ["os", "sys", "logging", "pathlib", "fastcore", "itertools"]
+
+    fail_nb = read_nb(FAIL_NB)
+    libs = detect_imported_libs(fail_nb)
+    assert len(libs) == 0
