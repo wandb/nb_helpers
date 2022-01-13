@@ -6,7 +6,15 @@ from fastcore.basics import listify
 import nbformat
 
 
-from nb_helpers.utils import git_local_repo, search_string_in_nb, read_nb, find_nbs, RichLogger, write_nb
+from nb_helpers.utils import (
+    detect_imported_libs,
+    git_local_repo,
+    search_string_in_nb,
+    read_nb,
+    find_nbs,
+    RichLogger,
+    write_nb,
+)
 from nb_helpers.colab import add_colab_badge, get_colab_url, _has_colab_badge
 
 
@@ -60,7 +68,7 @@ def summary_nbs(
         tracker_id = get_wandb_tracker(nb)
         fname = nb_path.relative_to(repo_path)
         features = search_code(nb, wandb_features)
-        libs = search_code(nb, python_libs)
+        libs = detect_imported_libs(nb)
         colab_cell_idx = _has_colab_badge(nb)
         row = [
             f"{i+1}",
