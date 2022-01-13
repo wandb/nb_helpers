@@ -21,4 +21,9 @@ jobs:
     - name: Run unit tests
       run: |
         coverage run -m pytest
-        coverage report -m
+        coverage html
+    - name: Archive code coverage results
+      uses: actions/upload-artifact@v2
+      with:
+        name: code-coverage-report
+        path: htmlcov/index.html

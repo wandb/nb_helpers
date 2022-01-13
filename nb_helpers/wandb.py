@@ -50,7 +50,7 @@ def summary_nbs(
     out_file: Param("Export to csv file", Path) = "summary.csv",
 ):
     path = Path(path)
-    out_file = (path.parent / out_file).with_suffix(".csv")
+    # out_file = (path.parent / out_file).with_suffix(".csv")
     logger = RichLogger(
         columns=["#", "nb name", "tracker", "wandb features", "python libs", "colab_cell"], out_file=out_file
     )
