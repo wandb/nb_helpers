@@ -15,7 +15,7 @@ from nb_helpers.utils import (
     RichLogger,
     write_nb,
 )
-from nb_helpers.colab import add_colab_badge, get_colab_url, _has_colab_badge
+from nb_helpers.colab import add_colab_badge, get_colab_url, has_colab_badge
 
 
 WANDB_FEATURES = "Table,sweep,WandbCallback,WandbLogger,Artifact"
@@ -47,7 +47,6 @@ def search_code(nb, features=WANDB_FEATURES):
 def summary_nbs(
     path: Param("A path to nb files", str) = ".",
     wandb_features: Param("wandb features to identify, comma separated", str) = WANDB_FEATURES,
-    python_libs: Param("Python lib names to filter, eg: tensorflow. Comma separated", str) = PYTHON_LIBS,
     out_file: Param("Export to csv file", Path) = "summary.csv",
 ):
     path = Path(path)
@@ -69,7 +68,7 @@ def summary_nbs(
         fname = nb_path.relative_to(repo_path)
         features = search_code(nb, wandb_features)
         libs = detect_imported_libs(nb)
-        colab_cell_idx = _has_colab_badge(nb)
+        colab_cell_idx = has_colab_badge(nb)
         row = [
             f"{i+1}",
             str(fname),

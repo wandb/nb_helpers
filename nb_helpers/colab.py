@@ -43,7 +43,7 @@ def _create_colab_cell(url, meta={}):
     return _new_cell("markdown", **kwargs)
 
 
-def _has_colab_badge(nb):
+def has_colab_badge(nb):
     "Check if notebook has colab badge, returns the cell position, -1 if not present"
     for i, cell in enumerate(nb["cells"]):
         if "Open In Colab" in cell["source"]:
@@ -62,7 +62,7 @@ def create_colab_badge_cell(fname, branch=None, meta={}):
 
 def add_colab_badge(notebook, fname, branch=None, idx=0, meta={}):
     "Add a badge to Open In Colab in the `idx` cell"
-    idx_colab_badge = _has_colab_badge(notebook)
+    idx_colab_badge = has_colab_badge(notebook)
     if idx_colab_badge != -1:
         colab_cell = notebook["cells"].pop(idx_colab_badge)
     else:

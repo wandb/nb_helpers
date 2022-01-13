@@ -11,7 +11,7 @@ from nb_helpers.utils import (
     read_nb,
     search_string_in_nb,
 )
-from nb_helpers.colab import in_colab, _has_colab_badge, add_colab_badge
+from nb_helpers.colab import in_colab, has_colab_badge, add_colab_badge
 
 
 def test_is_nb():
@@ -49,14 +49,14 @@ def test_git_origin_repo():
 
 def test_colab_badge():
     nb = read_nb(TEST_NB)
-    idx = _has_colab_badge(nb)
+    idx = has_colab_badge(nb)
     assert idx == 1
     badged_nb = add_colab_badge(nb, TEST_NB)
-    idx = _has_colab_badge(badged_nb)
+    idx = has_colab_badge(badged_nb)
     assert idx == 0
     fail_nb = read_nb(FAIL_NB)
     badged_nb = add_colab_badge(fail_nb, FAIL_NB)
-    idx = _has_colab_badge(badged_nb)
+    idx = has_colab_badge(badged_nb)
     assert idx == 0
 
 
