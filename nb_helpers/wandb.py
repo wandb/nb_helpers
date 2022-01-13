@@ -81,7 +81,7 @@ def summary_nbs(
         ]
         colab_link = get_colab_url(nb_path)
         logger.writerow(row, colab_link)
-
+    logger.finish()
     
     if html:
         html_file = Path("summary.html")
@@ -94,7 +94,7 @@ def summary_nbs(
             file.write(f"# Summary: {day}\n")
             file.write(f"> This file was created automatically!\n\n")
             file.write(logger.console.export_html())
-    logger.finish()
+    
 
 
 @call_parse
