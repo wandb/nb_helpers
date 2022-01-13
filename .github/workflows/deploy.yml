@@ -26,3 +26,11 @@ jobs:
       with:
         name: summary_upload
         path: summary.csv
+    - name: Create Issue From File
+      uses: peter-evans/create-issue-from-file@v3
+      with:
+        title: Summary
+        content-filepath: summary.html
+        labels: |
+          report
+          automated issue

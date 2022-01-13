@@ -41,7 +41,7 @@ class RichLogger:
     "A simple logger that logs to a file and the rich console"
 
     def __init__(self, columns=["#", "name"], colab=True, out_file="summary.csv", delimiter=";", width=180):
-        self.console = Console(width=width)
+        self.console = Console(width=width, record=True)
         print(f"CONSOLE.is_terminal(): {self.console.is_terminal}")
 
         # beautiful rich table

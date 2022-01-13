@@ -1,5 +1,6 @@
 # this is for our internal usage
 import re
+from datetime import date
 from pathlib import Path
 from fastcore.script import Param, call_parse, store_true
 from fastcore.basics import listify
@@ -48,6 +49,7 @@ def summary_nbs(
     path: Param("A path to nb files", str) = ".",
     wandb_features: Param("wandb features to identify, comma separated", str) = WANDB_FEATURES,
     out_file: Param("Export to csv file", Path) = "summary.csv",
+    html: Param("Export to csv file", store_true) = True,
 ):
     path = Path(path)
     # out_file = (path.parent / out_file).with_suffix(".csv")
@@ -80,6 +82,18 @@ def summary_nbs(
         colab_link = get_colab_url(nb_path)
         logger.writerow(row, colab_link)
 
+    
+    if html:
+        html_file = Path("summary.html")
+        print(f"Creating file {html_file}")
+        today = date.today()
+
+        # dd/mm/YY
+        day = today.strftime("%d/%m/%Y")
+        with open(html_file, "w", encoding="utf-8") as file:
+            file.write(f"# Summary: {day}\n")
+            file.write(f"> This file was created automatically!\n\n")
+            file.write(logger.console.export_html())
     logger.finish()
 
 
