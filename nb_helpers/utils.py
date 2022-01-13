@@ -37,7 +37,7 @@ def remove_rich_format(text):
 
 
 # log
-class Logger:
+class RichLogger:
     "A simple logger that logs to a file and the rich console"
 
     def __init__(self, columns=["#", "name"], colab=True, out_file="summary.csv", delimiter=";", width=180):
@@ -48,6 +48,10 @@ class Logger:
         self.table = create_table(columns + (["colab"] if colab else []))
 
         # outfile setup
+        logs_folder = git_local_repo(list(Path.cwd().iterdir())[0]) / "logs"
+        if not logs_folder.exists():
+            logs_folder.mkdir()
+        out_file = logs_folder / out_file
         self.log(f"Writing output to {out_file}")
         self.csv_file = open(out_file, "w", newline="")
         self.csv_writer = csv.writer(self.csv_file, delimiter=delimiter)
@@ -123,6 +127,12 @@ def search_string_in_nb(nb, string: str = None, cell_type=CellType.code):
 def git_current_branch(fname):
     "Get current git branch"
     return run(f"git -C {Path(fname).parent} symbolic-ref --short HEAD")
+
+
+def git_main_name(fname):
+    "Get the name of master/main branch"
+    branches = run(f"git -C {Path(fname).parent} branch")
+    return "main" if "main" in branches else "master"
 
 
 def git_origin_repo(fname):

@@ -1,0 +1,832 @@
+/content/examples/colabs/spacy/SpaCy_v3_and_W&B.ipynb
+Cell execution timed out
+/content/examples/colabs/dsviz/W&B_Dataset_and_Predictions_Viz_Demo.ipynb
+An error occurred while executing the following cell:
+------------------
+from pathlib import Path
+from fastai.vision import *
+from fastai.callbacks.hooks import *
+from fastai.callback import Callback
+import json
+from wandb.fastai import WandbCallback
+from functools import partialmethod
+
+# where to download files for local training
+LOCAL_TRAIN_DIR = "TRAIN_DIR"
+
+# Setup a WandB Classes object. This will give additional metadata for visuals
+class_set = wandb.Classes([{'name': name, 'id': id} 
+                           for name, id in zip(util.BDD_CLASSES, util.BDD_IDS)])
+
+# wrapper for logging masks to W&B
+def wb_mask(bg_img, pred_mask=[], true_mask=[]):
+  masks = {}
+  if len(pred_mask) > 0:
+    masks["prediction"] = {"mask_data" : pred_mask}
+  if len(true_mask) > 0:
+    masks["ground truth"] = {"mask_data" : true_mask}
+  return wandb.Image(bg_img, classes=class_set, masks=masks)
+
+SMOOTH = 1e-6
+# IOU loss function
+def iou(input, target):
+    target = target.squeeze(1)  # BATCH x 1 x H x W => BATCH x H x W
+    intersection = (input.argmax(dim=1) & target).float().sum((1, 2))  # Will be zero if Truth=0 or Prediction=0
+    union = (input.argmax(dim=1) | target).float().sum((1, 2))         # Will be zero if both are 0
+    iou = (intersection + SMOOTH) / (union + SMOOTH)  # We smooth our division to avoid 0/0
+    return iou.mean()
+
+# Custom callback for logging images to W&B
+class LogImagesCallback(Callback):
+
+  def __init__(self, learn):
+    self.learn = learn
+
+  # log semantic segmentation masks
+  def on_epoch_end(self, epoch, n_epochs, **kwargs):
+    # optionally limit all these to store fewer images
+    # e.g. by adding [:num_log] to every line
+    train_batch = self.learn.data.train_ds
+    train_ids = [a.stem for a in self.learn.data.train_ds.items]
+    valid_batch = self.learn.data.valid_ds
+    val_ids = [a.stem for a in self.learn.data.valid_ds.items]
+
+    train_masks = []
+    valid_masks = []
+
+    # save training and validation predictions
+    # note: we're training for 1 epoch for brevity, but this approach
+    # will create a new version of the artifact for each epoch
+    train_res_at = wandb.Artifact("train_pred_" + wandb.run.id, "train_epoch_preds")
+    val_res_at = wandb.Artifact("val_pred_" + wandb.run.id, "val_epoch_preds")
+    # store all final results in a single artifact across experiments and
+    # model variants to easily compare predictions
+    final_model_res_at = wandb.Artifact("resnet_pred", "model_preds")
+
+
+    main_columns = ["id", "prediction", "ground_truth"]
+    # we'll track the IOU for each class
+    main_columns.extend(["iou_" + s for s in util.BDD_CLASSES])
+    # create tables
+    train_table = wandb.Table(columns=main_columns)
+    val_table = wandb.Table(columns=main_columns)
+    model_res_table = wandb.Table(columns=main_columns)
+
+
+    for batch_masks, batch, batch_ids, table, phase in zip([train_masks, valid_masks],
+                                                    [train_batch, valid_batch], 
+                                                    [train_ids, val_ids],
+                                                    [train_table, val_table],
+                                                    ["train", "val"]):
+      for i, img in enumerate(batch):
+        # log raw image as array
+        orig_image = img[0]
+        bg_image = image2np(orig_image.data*255).astype(np.uint8)
+
+        # verify prediction from the model
+        prediction = self.learn.predict(img[0])[0]
+        prediction_mask = image2np(prediction.data).astype(np.uint8)
+
+        # ground truth mask
+        ground_truth = img[1]
+        true_mask = image2np(ground_truth.data).astype(np.uint8)
+
+        # score masks: what is the IOU for each class?
+        per_class_scores = [util.iou_flat(prediction_mask, true_mask, i) for i in util.BDD_IDS]
+        row = [str(batch_ids[i]), wb_mask(bg_image, pred_mask=prediction_mask), 
+                                  wb_mask(bg_image, true_mask=true_mask)]
+        row.extend(per_class_scores)
+        table.add_data(*row)
+        # only for last epoch
+        if phase == "val" and epoch == n_epochs - 1:
+          model_res_table.add_data(*row)
+
+    train_res_at.add(train_table, "train_epoch_results")
+    val_res_at.add(val_table, "val_epoch_results")
+    # by reference
+    final_model_res_at.add(model_res_table, "model_results")
+    wandb.run.log_artifact(train_res_at)
+    wandb.run.log_artifact(val_res_at)
+    wandb.run.log_artifact(final_model_res_at)
+
+def train_model():
+  # default settings / hyperparameters
+  default_config = {
+    "framework" : "fastai",
+    "img_size" : (360, 640),
+    "batch_size" : 8, # keep small in Colab to be manageable
+    "epochs" : 1, # for brevity, increase for better results :)
+    "data_split" : 0.7,
+    "pretrained" : True  # whether to use pretrained encoder
+  }
+  run = wandb.init(project=WANDB_PROJECT, job_type="train", \
+             config=default_config)
+  
+  cfg = wandb.config
+  # resnet34 may also be manageable in this Colab :)
+  cfg.encoder = "resnet18"
+  encoder = models.resnet18
+
+  # best config for hyperparameters from past sweeps
+  cfg.weight_decay = 0.08173
+  cfg.bn_weight_decay = True   # whether weight decay is applied on batch norm layers
+  cfg.one_cycle = True         # use the "1cycle" policy -> https://arxiv.org/abs/1803.09820
+  cfg.learning_rate = 0.002
+
+  # fetch the latest verstion of the training data
+  train_artifact = run.use_artifact(TRAIN_DATA_AT + ":latest")
+  # download it locally (required for this Fastai approach)
+  train_dir = train_artifact.download(LOCAL_TRAIN_DIR)
+
+  # map each image file to its label file
+  get_label = lambda x: str(x.parents[0]).replace("images", "labels") + "/"  + str(x.stem) + "_train_id.png"
+
+  # load data into train & validation sets
+  src = (SegmentationItemList.from_folder("./" + LOCAL_TRAIN_DIR + "/images")
+       .split_by_rand_pct(cfg.data_split)
+       .label_from_func(get_label, classes=util.BDD_CLASSES))
+  # resize, augment, load in batch & normalize (so we can use pre-trained networks)
+  data = (src.transform(get_transforms(), size=cfg.img_size, tfm_y=True)
+        .databunch(bs=cfg.batch_size)
+        .normalize(imagenet_stats))
+
+  # define UNet model
+  learn = unet_learner(
+    data,
+    arch=encoder,
+    pretrained=cfg.pretrained,
+    metrics=iou,
+    wd=cfg.weight_decay,
+    bn_wd=cfg.bn_weight_decay,
+    callback_fns=partial(WandbCallback, save_model=True, monitor='iou'))
+  
+  # train model!
+  learn.fit_one_cycle(
+        cfg.epochs,
+        max_lr=slice(cfg.learning_rate),
+        callbacks=[LogImagesCallback(learn)])
+  
+  # save the trained model as an artifact
+  # note: make this name more descriptive as you experiment so it's easier to track
+  model_name = cfg.encoder 
+  saved_model = wandb.Artifact(model_name, type="model")
+  # export trained model
+  learn.export(file = Path(model_name + ".pkl"))
+  local_model_file = LOCAL_TRAIN_DIR + "/images/" + model_name + ".pkl"
+  saved_model.add_file(local_model_file, name=model_name)
+  print("Saving data to WandB...")
+  run.log_artifact(saved_model)
+  run.finish()
+  print("... Run Complete")
+------------------
+
+---------------------------------------------------------------------------
+ModuleNotFoundError                       Traceback (most recent call last)
+<ipython-input-10-4ed942ad96e8> in <module>()
+      1 from pathlib import Path
+      2 from fastai.vision import *
+----> 3 from fastai.callbacks.hooks import *
+      4 from fastai.callback import Callback
+      5 import json
+
+ModuleNotFoundError: No module named 'fastai.callbacks'
+
+---------------------------------------------------------------------------
+NOTE: If your import is failing due to a missing package, you can
+manually install dependencies using either !pip or !apt.
+
+To view examples of installing some common dependencies, click the
+"Open Examples" button below.
+---------------------------------------------------------------------------
+
+ModuleNotFoundError: No module named 'fastai.callbacks'
+
+/content/examples/colabs/raytune/W&B_+_RayTune.ipynb
+An error occurred while executing the following cell:
+------------------
+api_key = getpass.getpass(
+    "Enter your W&B API key from https://wandb.ai/settings : ")
+
+wandb_init = {"project": "raytune",
+              "job_type": "raytune-demo",
+              "api_key": api_key}
+------------------
+
+---------------------------------------------------------------------------
+StdinNotImplementedError                  Traceback (most recent call last)
+<ipython-input-6-ffa9306bec27> in <module>()
+      1 api_key = getpass.getpass(
+----> 2     "Enter your W&B API key from https://wandb.ai/settings : ")
+      3 
+      4 wandb_init = {"project": "raytune",
+      5               "job_type": "raytune-demo",
+
+/usr/local/lib/python3.7/dist-packages/ipykernel/kernelbase.py in getpass(self, prompt, stream)
+    676         if not self._allow_stdin:
+    677             raise StdinNotImplementedError(
+--> 678                 "getpass was called, but this frontend does not support input requests."
+    679             )
+    680         if stream is not None:
+
+StdinNotImplementedError: getpass was called, but this frontend does not support input requests.
+StdinNotImplementedError: getpass was called, but this frontend does not support input requests.
+
+/content/examples/colabs/pytorch-lightning/Fine_tuning_a_Transformer_with_Pytorch_Lightning.ipynb
+Cell execution timed out
+/content/examples/colabs/deepchem/W&B_x_DeepChem.ipynb
+An error occurred while executing the following cell:
+------------------
+n_tasks = len(tasks)
+model = dc.models.GraphConvModel(n_tasks, mode='classification', wandb_logger=wandblogger)
+model.fit(train_dataset, nb_epoch=50, callbacks=[vc_valid])
+wandblogger.finish()
+------------------
+
+---------------------------------------------------------------------------
+Exception                                 Traceback (most recent call last)
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/wandb_init.py in init(job_type, dir, config, project, entity, reinit, tags, group, name, notes, magic, config_exclude_keys, config_include_keys, anonymous, mode, allow_val_change, resume, force, tensorboard, sync_tensorboard, monitor_gym, save_code, id, settings)
+    930         try:
+--> 931             run = wi.init()
+    932             except_exit = wi.settings._except_exit
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/wandb_init.py in init(self)
+    595                 # we don't need to do console cleanup at this point
+--> 596                 backend.cleanup()
+    597                 self.teardown()
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/backend/backend.py in cleanup(self)
+    244         if self.interface:
+--> 245             self.interface.join()
+    246         if self.wandb_process:
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/interface/interface_shared.py in join(self)
+    457     def join(self) -> None:
+--> 458         super().join()
+    459 
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/interface/interface.py in join(self)
+    598             return
+--> 599         _ = self._communicate_shutdown()
+    600 
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/interface/interface_shared.py in _communicate_shutdown(self)
+    454         record = self._make_record(request=request)
+--> 455         _ = self._communicate(record)
+    456 
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/interface/interface_shared.py in _communicate(self, rec, timeout, local)
+    212     ) -> Optional[pb.Result]:
+--> 213         return self._communicate_async(rec, local=local).get(timeout=timeout)
+    214 
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/interface/interface_shared.py in _communicate_async(self, rec, local)
+    217         if self._process_check and self._process and not self._process.is_alive():
+--> 218             raise Exception("The wandb backend process has shutdown")
+    219         future = self._router.send_and_receive(rec, local=local)
+
+Exception: The wandb backend process has shutdown
+
+The above exception was the direct cause of the following exception:
+
+Exception                                 Traceback (most recent call last)
+<ipython-input-8-8d98f2aa9f85> in <module>()
+      1 n_tasks = len(tasks)
+----> 2 model = dc.models.GraphConvModel(n_tasks, mode='classification', wandb_logger=wandblogger)
+      3 model.fit(train_dataset, nb_epoch=50, callbacks=[vc_valid])
+      4 wandblogger.finish()
+
+/usr/local/lib/python3.7/dist-packages/deepchem/models/graph_models.py in __init__(self, n_tasks, graph_conv_layers, dense_layer_size, dropout, mode, number_atom_features, n_classes, batch_size, batch_normalize, uncertainty, **kwargs)
+    989         loss = L2Loss()
+    990     super(GraphConvModel, self).__init__(
+--> 991         model, loss, output_types=output_types, batch_size=batch_size, **kwargs)
+    992 
+    993   def default_generator(self,
+
+/usr/local/lib/python3.7/dist-packages/deepchem/models/keras_model.py in __init__(self, model, loss, output_types, batch_size, model_dir, learning_rate, optimizer, tensorboard, wandb, log_frequency, wandb_logger, **kwargs)
+    208     # Setup and initialize W&B logging
+    209     if (self.wandb_logger is not None) and (not self.wandb_logger.initialized):
+--> 210       self.wandb_logger.setup()
+    211 
+    212     # Update config with KerasModel params
+
+/usr/local/lib/python3.7/dist-packages/deepchem/models/wandblogger.py in setup(self)
+     87     """
+     88     if self._wandb.run is None:
+---> 89       self.wandb_run = self._wandb.init(**self.wandb_init_params)
+     90     else:
+     91       self.wandb_run = self._wandb.run
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/wandb_init.py in init(job_type, dir, config, project, entity, reinit, tags, group, name, notes, magic, config_exclude_keys, config_include_keys, anonymous, mode, allow_val_change, resume, force, tensorboard, sync_tensorboard, monitor_gym, save_code, id, settings)
+    967             if except_exit:
+    968                 os._exit(-1)
+--> 969             six.raise_from(Exception("problem"), error_seen)
+    970     return run
+
+/usr/local/lib/python3.7/dist-packages/six.py in raise_from(value, from_value)
+
+Exception: problem
+Exception: problem
+
+/content/examples/colabs/wandb-artifacts/W&B_artifacts_for_auditing_purposes.ipynb
+Cell execution timed out
+/content/examples/colabs/stable_baselines3/Stable Baselines 3 - Track Experiments with Weights and Biases.ipynb
+An error occurred while executing the following cell:
+------------------
+!apt install python-opengl xvfb
+!pip install pyvirtualdisplay stable_baselines3[extra] wandb
+from pyvirtualdisplay import Display
+virtual_display = Display(visible=0, size=(1400, 900))
+virtual_display.start()
+------------------
+
+---------------------------------------------------------------------------
+FileNotFoundError                         Traceback (most recent call last)
+/usr/local/lib/python3.7/dist-packages/easyprocess/__init__.py in start(self)
+    168             self.popen = subprocess.Popen(
+--> 169                 cmd, stdout=stdout, stderr=stderr, cwd=self.cwd, env=self.env,
+    170             )
+
+/usr/lib/python3.7/subprocess.py in __init__(self, args, bufsize, executable, stdin, stdout, stderr, preexec_fn, close_fds, shell, cwd, env, universal_newlines, startupinfo, creationflags, restore_signals, start_new_session, pass_fds, encoding, errors, text)
+    799                                 errread, errwrite,
+--> 800                                 restore_signals, start_new_session)
+    801         except:
+
+/usr/lib/python3.7/subprocess.py in _execute_child(self, args, executable, preexec_fn, close_fds, pass_fds, cwd, env, startupinfo, creationflags, shell, p2cread, p2cwrite, c2pread, c2pwrite, errread, errwrite, restore_signals, start_new_session)
+   1550                             err_msg += ': ' + repr(err_filename)
+-> 1551                     raise child_exception_type(errno_num, err_msg, err_filename)
+   1552                 raise child_exception_type(err_msg)
+
+FileNotFoundError: [Errno 2] No such file or directory: 'Xvfb': 'Xvfb'
+
+During handling of the above exception, another exception occurred:
+
+EasyProcessError                          Traceback (most recent call last)
+<ipython-input-1-5190918f80cd> in <module>()
+      2 get_ipython().system('pip install pyvirtualdisplay stable_baselines3[extra] wandb')
+      3 from pyvirtualdisplay import Display
+----> 4 virtual_display = Display(visible=0, size=(1400, 900))
+      5 virtual_display.start()
+
+/usr/local/lib/python3.7/dist-packages/pyvirtualdisplay/display.py in __init__(self, backend, visible, size, color_depth, bgcolor, use_xauth, retries, extra_args, manage_global_env, **kwargs)
+     61             extra_args=extra_args,
+     62             manage_global_env=manage_global_env,
+---> 63             **kwargs
+     64         )
+     65 
+
+/usr/local/lib/python3.7/dist-packages/pyvirtualdisplay/xvfb.py in __init__(self, size, color_depth, bgcolor, use_xauth, fbdir, dpi, retries, extra_args, manage_global_env)
+     48             retries=retries,
+     49             extra_args=extra_args,
+---> 50             manage_global_env=manage_global_env,
+     51         )
+     52 
+
+/usr/local/lib/python3.7/dist-packages/pyvirtualdisplay/abstractdisplay.py in __init__(self, program, use_xauth, retries, extra_args, manage_global_env)
+     86         self._retries_current = 0
+     87 
+---> 88         helptext = get_helptext(program)
+     89         self._has_displayfd = "-displayfd" in helptext
+     90         if not self._has_displayfd:
+
+/usr/local/lib/python3.7/dist-packages/pyvirtualdisplay/util.py in get_helptext(program)
+      8     p.enable_stdout_log = False
+      9     p.enable_stderr_log = False
+---> 10     p.call()
+     11     helptext = p.stderr
+     12     return helptext
+
+/usr/local/lib/python3.7/dist-packages/easyprocess/__init__.py in call(self, timeout)
+    139 
+    140         """
+--> 141         self.start().wait(timeout=timeout)
+    142         if self.is_alive():
+    143             self.stop()
+
+/usr/local/lib/python3.7/dist-packages/easyprocess/__init__.py in start(self)
+    172             log.debug("OSError exception: %s", oserror)
+    173             self.oserror = oserror
+--> 174             raise EasyProcessError(self, "start error")
+    175         self.is_started = True
+    176         log.debug("process was started (pid=%s)", self.pid)
+
+EasyProcessError: start error <EasyProcess cmd_param=['Xvfb', '-help'] cmd=['Xvfb', '-help'] oserror=[Errno 2] No such file or directory: 'Xvfb': 'Xvfb' return_code=None stdout="None" stderr="None" timeout_happened=False>
+EasyProcessError: start error <EasyProcess cmd_param=['Xvfb', '-help'] cmd=['Xvfb', '-help'] oserror=[Errno 2] No such file or directory: 'Xvfb': 'Xvfb' return_code=None stdout="None" stderr="None" timeout_happened=False>
+
+/content/examples/colabs/yolo/Train_and_Debug_YOLOv5_Models_with_Weights_&_Biases.ipynb
+An error occurred while executing the following cell:
+------------------
+from IPython.display import Image
+
+!python detect.py --weights yolov5s.pt --img 640 --conf 0.25 --source data/images/bus.jpg
+Image(filename='runs/detect/exp/bus.jpg', width=600)
+------------------
+
+---------------------------------------------------------------------------
+FileNotFoundError                         Traceback (most recent call last)
+<ipython-input-2-9d708d444061> in <module>()
+      2 
+      3 get_ipython().system('python detect.py --weights yolov5s.pt --img 640 --conf 0.25 --source data/images/bus.jpg')
+----> 4 Image(filename='runs/detect/exp/bus.jpg', width=600)
+
+/usr/local/lib/python3.7/dist-packages/IPython/core/display.py in __init__(self, data, url, filename, format, embed, width, height, retina, unconfined, metadata)
+   1019         self.unconfined = unconfined
+   1020         self.metadata = metadata
+-> 1021         super(Image, self).__init__(data=data, url=url, filename=filename)
+   1022 
+   1023         if retina:
+
+/usr/local/lib/python3.7/dist-packages/IPython/core/display.py in __init__(self, data, url, filename)
+    611         self.filename = None if filename is None else unicode_type(filename)
+    612 
+--> 613         self.reload()
+    614         self._check_data()
+    615 
+
+/usr/local/lib/python3.7/dist-packages/IPython/core/display.py in reload(self)
+   1041         """Reload the raw data from file or URL."""
+   1042         if self.embed:
+-> 1043             super(Image,self).reload()
+   1044             if self.retina:
+   1045                 self._retina_shape()
+
+/usr/local/lib/python3.7/dist-packages/IPython/core/display.py in reload(self)
+    629         """Reload the raw data from file or URL."""
+    630         if self.filename is not None:
+--> 631             with open(self.filename, self._read_flags) as f:
+    632                 self.data = f.read()
+    633         elif self.url is not None:
+
+FileNotFoundError: [Errno 2] No such file or directory: 'runs/detect/exp/bus.jpg'
+FileNotFoundError: [Errno 2] No such file or directory: 'runs/detect/exp/bus.jpg'
+
+/content/examples/colabs/datasets-predictions/Logging_Timbre_Transfer_with_W&B.ipynb
+An error occurred while executing the following cell:
+------------------
+%tensorflow_version 2.x
+print('Installing from pip package...')
+!pip install -qU ddsp==1.0.1
+!pip install -qqq wandb
+# Ignore a bunch of deprecation warnings
+import warnings
+warnings.filterwarnings("ignore")
+
+import copy
+import os
+import time
+
+import crepe
+import ddsp
+import ddsp.training
+from ddsp.colab import colab_utils
+from ddsp.colab.colab_utils import (
+    audio_bytes_to_np,
+    auto_tune, detect_notes, fit_quantile_transform, 
+    get_tuning_factor, download, play, record, 
+    specplot, upload, DEFAULT_SAMPLE_RATE)
+from ddsp import core
+from ddsp import spectral_ops
+
+import gin
+from google.colab import files
+import librosa
+import matplotlib.pyplot as plt
+from matplotlib import gridspec
+
+import numpy as np
+import pickle
+import tensorflow.compat.v2 as tf
+import tensorflow_datasets as tfds
+import wandb
+
+from urllib.request import urlretrieve
+
+TRIM = -15
+DEFAULT_SAMPLE_RATE = spectral_ops.CREPE_SAMPLE_RATE # 16000
+
+print('Done!')
+------------------
+
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+<ipython-input-1-99e6411645c8> in <module>()
+     12 
+     13 import crepe
+---> 14 import ddsp
+     15 import ddsp.training
+     16 from ddsp.colab import colab_utils
+
+/usr/local/lib/python3.7/dist-packages/ddsp/__init__.py in <module>()
+     18 # Module imports.
+     19 from ddsp import core
+---> 20 from ddsp import dags
+     21 from ddsp import effects
+     22 from ddsp import losses
+
+/usr/local/lib/python3.7/dist-packages/ddsp/dags.py in <module>()
+     57 # DAG and ProcessorGroup Classes -----------------------------------------------
+     58 @gin.register
+---> 59 class DAGLayer(tfkl.Layer):
+     60   """String modules together."""
+     61 
+
+/usr/local/lib/python3.7/dist-packages/ddsp/dags.py in DAGLayer()
+    132     return self.run_dag(inputs, **kwargs)
+    133 
+--> 134   @gin.configurable(whitelist=['verbose'])  # For debugging.
+    135   def run_dag(self,
+    136               inputs: TensorDict,
+
+TypeError: configurable() got an unexpected keyword argument 'whitelist'
+TypeError: configurable() got an unexpected keyword argument 'whitelist'
+
+/content/examples/colabs/datasets-predictions/W&B_Dataset_Visualization.ipynb
+An error occurred while executing the following cell:
+------------------
+# Download the data if not already present
+util.download_data()
+# Show an example training image
+util.show_image(util.get_train_image_path(0))
+# Show an example of color mask
+util.show_image(util.get_color_label_image_path(0))
+
+# Print the label types:
+print("Class Mapping:")
+print(list(zip(util.BDD_IDS, util.BDD_CLASSES)))
+------------------
+
+---------------------------------------------------------------------------
+FileNotFoundError                         Traceback (most recent call last)
+<ipython-input-5-c85baa3ba68a> in <module>()
+      1 # Download the data if not already present
+----> 2 util.download_data()
+      3 # Show an example training image
+      4 util.show_image(util.get_train_image_path(0))
+      5 # Show an example of color mask
+
+/tmp/tmpjw4qrwe2/util.py in download_data()
+     36         os.system('tar xzf bdd100k.tgz')
+     37 
+---> 38     train_ids = [name.split(".")[0] for name in os.listdir(train_dir) if name.split(".")[0] != ""]
+     39 
+     40     print("Raw data downlaoded to ./bdd100k.")
+
+FileNotFoundError: [Errno 2] No such file or directory: './bdd100k/seg/images/train'
+FileNotFoundError: [Errno 2] No such file or directory: './bdd100k/seg/images/train'
+
+/content/examples/colabs/pycaret/Default_Credit_Prediction_Using_W&B_Pycaret_FastAPI.ipynb
+An error occurred while executing the following cell:
+------------------
+for candidate in versions:
+  run = wandb.init(project="pycaret-example", reinit=True, group=group_id,
+               name=f"pycaret-evaluate-models",
+               notes=f"Data drift and model analysis for promotion of models to production")
+  # run.display(height=360)
+  
+  #Pull latest training data from wandb and load into df
+  train_artifacts_path = run.use_artifact(f"{dataset_name}_train_data:latest").download()
+  train_data_path = Path(train_artifacts_path, "train_data_table.table.json")
+  train_data = load_wandb_table_artifact(train_data_path)
+
+  #pull "production" data from wandb and load into df
+  test_artifacts_path = run.use_artifact(f"{dataset_name}_test_data:latest").download()
+  test_data_path = Path(test_artifacts_path, "test_data_table.table.json")
+  test_data = load_wandb_table_artifact(test_data_path)
+
+  #To prevent the original data from being mutated due to Evidently we save it into another object
+  #This is not a necessary step
+  ref_data = train_data.copy(deep=True)
+  prod_data = test_data.copy(deep=True)
+
+  #We add this use artifact step to ensure that W&B recongizes that this run has taken in this candidate artifact reference as an input
+  candidate_artifact = run.use_artifact(candidate)
+  model_path = candidate.get_path("model.pkl").download()
+  candidate_model = load_model(model_path.replace(".pkl", ""))
+
+  ref_data["prediction"] = predict_model(candidate_model, data = ref_data.drop(["target"], axis=1)).rename({"Label": "prediction"}, axis=1)["prediction"]
+  prod_data["prediction"] = predict_model(candidate_model, data = prod_data.drop(["target"], axis=1)).rename({"Label": "prediction"}, axis=1)["prediction"]
+
+  class_report_dict = classification_report(prod_data["target"], prod_data["prediction"], output_dict=True)
+  candidate.metadata["evaluation_metrics"] = class_report_dict
+                                                    
+  data_and_target_drift_classification_report = Dashboard(tabs=[DataDriftTab, CatTargetDriftTab, ClassificationPerformanceTab])
+  data_and_target_drift_classification_report.calculate(ref_data, prod_data)
+  data_and_target_drift_classification_report.save("data_and_target_drift_classification_report.html")
+
+  run.log({
+      "data_and_target_drift_classification_report" : wandb.Html("data_and_target_drift_classification_report.html"), 
+      "ref_eval" : wandb.Table(dataframe=prod_data[["target", "prediction"]]),
+      "prod_eval" : wandb.Table(dataframe=ref_data[["target", "prediction"]])
+  })
+  candidate.save()
+  run.finish()
+------------------
+
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+/tmp/ipykernel_74915/1961994131.py in <module>
+     31   candidate.metadata["evaluation_metrics"] = class_report_dict
+     32 
+---> 33   data_and_target_drift_classification_report = Dashboard(tabs=[DataDriftTab, CatTargetDriftTab, ClassificationPerformanceTab])
+     34   data_and_target_drift_classification_report.calculate(ref_data, prod_data)
+     35   data_and_target_drift_classification_report.save("data_and_target_drift_classification_report.html")
+
+/usr/local/lib/python3.7/dist-packages/evidently/dashboard/dashboard.py in __init__(self, tabs, options)
+    138 
+    139     def __init__(self, tabs: Sequence[Tab], options: Optional[List[object]] = None):
+--> 140         super().__init__(tabs, options if options is not None else [])
+    141 
+    142     def calculate(self,
+
+/usr/local/lib/python3.7/dist-packages/evidently/pipeline/pipeline.py in __init__(self, stages, options)
+     20         self.analyzers_results = {}
+     21         self.options_provider = OptionsProvider()
+---> 22         self._analyzers = list(itertools.chain.from_iterable([stage.analyzers() for stage in stages]))
+     23         for option in options:
+     24             self.options_provider.add(option)
+
+/usr/local/lib/python3.7/dist-packages/evidently/pipeline/pipeline.py in <listcomp>(.0)
+     20         self.analyzers_results = {}
+     21         self.options_provider = OptionsProvider()
+---> 22         self._analyzers = list(itertools.chain.from_iterable([stage.analyzers() for stage in stages]))
+     23         for option in options:
+     24             self.options_provider.add(option)
+
+TypeError: analyzers() missing 1 required positional argument: 'self'
+TypeError: analyzers() missing 1 required positional argument: 'self'
+
+/content/examples/colabs/tables/AlphaFold_with_W&B_Align,_Fold,_Log.ipynb
+An error occurred while executing the following cell:
+------------------
+#@title Download AlphaFold
+
+#@markdown Please execute this cell by pressing the *Play* button on 
+#@markdown the left.
+
+GIT_REPO = 'https://github.com/deepmind/alphafold'
+
+SOURCE_URL = 'https://storage.googleapis.com/alphafold/alphafold_params_2021-07-14.tar'
+PARAMS_DIR = './alphafold/data/params'
+PARAMS_PATH = os.path.join(PARAMS_DIR, os.path.basename(SOURCE_URL))
+
+try:
+  with tqdm.notebook.tqdm(total=100, bar_format=TQDM_BAR_FORMAT) as pbar:
+    with io.capture_output() as captured:
+      %shell rm -rf alphafold
+      %shell git clone {GIT_REPO} alphafold
+      pbar.update(8)
+      %shell pip3 install ./alphafold
+      pbar.update(10)
+
+      # Apply OpenMM patch.
+      %shell pushd /opt/conda/lib/python3.7/site-packages/ && \
+          patch -p0 < /content/alphafold/docker/openmm.patch && \
+          popd
+          
+      %shell mkdir -p /content/alphafold/common
+      %shell cp -f /content/stereo_chemical_props.txt /content/alphafold/common
+
+      %shell mkdir --parents "{PARAMS_DIR}"
+      %shell wget -O "{PARAMS_PATH}" "{SOURCE_URL}"
+      pbar.update(27)
+
+      %shell tar --extract --verbose --file="{PARAMS_PATH}" \
+        --directory="{PARAMS_DIR}" --preserve-permissions
+      %shell rm "{PARAMS_PATH}"
+      pbar.update(55)
+except subprocess.CalledProcessError:
+  print(captured)
+  raise
+
+import jax
+if jax.local_devices()[0].platform == 'tpu':
+  raise RuntimeError('Colab TPU runtime not supported. Change it to GPU via Runtime -> Change Runtime Type -> Hardware accelerator -> GPU.')
+elif jax.local_devices()[0].platform == 'cpu':
+  raise RuntimeError('Colab CPU runtime not supported. Change it to GPU via Runtime -> Change Runtime Type -> Hardware accelerator -> GPU.')
+------------------
+
+---------------------------------------------------------------------------
+CalledProcessError                        Traceback (most recent call last)
+/tmp/ipykernel_80429/975340731.py in <module>
+     20 
+     21       # Apply OpenMM patch.
+---> 22       get_ipython().run_line_magic('shell', 'pushd /opt/conda/lib/python3.7/site-packages/ &&            patch -p0 < /content/alphafold/docker/openmm.patch &&            popd')
+     23 
+     24       get_ipython().run_line_magic('shell', 'mkdir -p /content/alphafold/common')
+
+/usr/local/lib/python3.7/dist-packages/IPython/core/interactiveshell.py in run_line_magic(self, magic_name, line, _stack_depth)
+   2362                 kwargs['local_ns'] = self.get_local_scope(stack_depth)
+   2363             with self.builtin_trap:
+-> 2364                 result = fn(*args, **kwargs)
+   2365             return result
+   2366 
+
+/usr/local/lib/python3.7/dist-packages/google/colab/_system_commands.py in _shell_line_magic(line)
+     69   """
+     70   result = _run_command(line, clear_streamed_output=False)
+---> 71   result.check_returncode()
+     72   return result
+     73 
+
+/usr/local/lib/python3.7/dist-packages/google/colab/_system_commands.py in check_returncode(self)
+    137     if self.returncode:
+    138       raise subprocess.CalledProcessError(
+--> 139           returncode=self.returncode, cmd=self.args, output=self.output)
+    140 
+    141   def _repr_pretty_(self, p, cycle):  # pylint:disable=unused-argument
+
+CalledProcessError: Command 'pushd /opt/conda/lib/python3.7/site-packages/ &&            patch -p0 < /content/alphafold/docker/openmm.patch &&            popd' returned non-zero exit status 1.
+CalledProcessError: Command 'pushd /opt/conda/lib/python3.7/site-packages/ &&            patch -p0 < /content/alphafold/docker/openmm.patch &&            popd' returned non-zero exit status 1.
+
+/content/examples/colabs/huggingface/Optimize_Hugging_Face_models_with_Weights_&_Biases.ipynb
+Cell execution timed out
+/content/examples/colabs/scikit/w-b-k-means-clustering.ipynb
+An error occurred while executing the following cell:
+------------------
+import os
+import wandb
+
+# Paste your api key here
+os.environ["WANDB_API_KEY"] = '...'
+
+
+# Initialize the run
+run = wandb.init(project='...', entity='...')
+
+# Feel free to change these and experiment !!
+config = wandb.config
+config.seed = 42
+config.n_clusters = 3
+config.dataset = 'iris'
+config.labels=['Setosa', 'Versicolour', 'Virginica']
+
+# Set random seed
+np.random.seed(config.seed)
+
+# Update the config
+wandb.config.update(config)
+------------------
+
+---------------------------------------------------------------------------
+Exception                                 Traceback (most recent call last)
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/wandb_init.py in init(job_type, dir, config, project, entity, reinit, tags, group, name, notes, magic, config_exclude_keys, config_include_keys, anonymous, mode, allow_val_change, resume, force, tensorboard, sync_tensorboard, monitor_gym, save_code, id, settings)
+    930         try:
+--> 931             run = wi.init()
+    932             except_exit = wi.settings._except_exit
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/wandb_init.py in init(self)
+    595                 # we don't need to do console cleanup at this point
+--> 596                 backend.cleanup()
+    597                 self.teardown()
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/backend/backend.py in cleanup(self)
+    244         if self.interface:
+--> 245             self.interface.join()
+    246         if self.wandb_process:
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/interface/interface_shared.py in join(self)
+    457     def join(self) -> None:
+--> 458         super().join()
+    459 
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/interface/interface.py in join(self)
+    598             return
+--> 599         _ = self._communicate_shutdown()
+    600 
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/interface/interface_shared.py in _communicate_shutdown(self)
+    454         record = self._make_record(request=request)
+--> 455         _ = self._communicate(record)
+    456 
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/interface/interface_shared.py in _communicate(self, rec, timeout, local)
+    212     ) -> Optional[pb.Result]:
+--> 213         return self._communicate_async(rec, local=local).get(timeout=timeout)
+    214 
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/interface/interface_shared.py in _communicate_async(self, rec, local)
+    217         if self._process_check and self._process and not self._process.is_alive():
+--> 218             raise Exception("The wandb backend process has shutdown")
+    219         future = self._router.send_and_receive(rec, local=local)
+
+Exception: The wandb backend process has shutdown
+
+The above exception was the direct cause of the following exception:
+
+Exception                                 Traceback (most recent call last)
+/tmp/ipykernel_100758/2341299772.py in <module>
+      7 
+      8 # Initialize the run
+----> 9 run = wandb.init(project='...', entity='...')
+     10 
+     11 # Feel free to change these and experiment !!
+
+/usr/local/lib/python3.7/dist-packages/wandb/sdk/wandb_init.py in init(job_type, dir, config, project, entity, reinit, tags, group, name, notes, magic, config_exclude_keys, config_include_keys, anonymous, mode, allow_val_change, resume, force, tensorboard, sync_tensorboard, monitor_gym, save_code, id, settings)
+    967             if except_exit:
+    968                 os._exit(-1)
+--> 969             six.raise_from(Exception("problem"), error_seen)
+    970     return run
+
+/usr/local/lib/python3.7/dist-packages/six.py in raise_from(value, from_value)
+
+Exception: problem
+Exception: problem

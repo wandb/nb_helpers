@@ -6,7 +6,7 @@ from fastcore.basics import listify
 import nbformat
 
 
-from nb_helpers.utils import git_local_repo, search_string_in_nb, read_nb, find_nbs, Logger, write_nb
+from nb_helpers.utils import git_local_repo, search_string_in_nb, read_nb, find_nbs, RichLogger, write_nb
 from nb_helpers.colab import add_colab_badge, get_colab_url, _has_colab_badge
 
 
@@ -41,11 +41,10 @@ def summary_nbs(
     wandb_features: Param("wandb features to identify, comma separated", str) = WANDB_FEATURES,
     python_libs: Param("Python lib names to filter, eg: tensorflow. Comma separated", str) = PYTHON_LIBS,
     out_file: Param("Export to csv file", Path) = "summary.csv",
-    fix_colab_cell_idx: Param("Cell idx where the colab badge must go", int) = -1,
 ):
     path = Path(path)
     out_file = (path.parent / out_file).with_suffix(".csv")
-    logger = Logger(
+    logger = RichLogger(
         columns=["#", "nb name", "tracker", "wandb features", "python libs", "colab_cell"], out_file=out_file
     )
 
@@ -80,17 +79,16 @@ def summary_nbs(
 @call_parse
 def fix_nbs(
     path: Param("A path to nb files", str) = ".",
-    colab_cell_idx: Param("Cell idx where the colab badge must go", int) = -1,
-    colab_meta: Param("Add metadata to hide colab badge on colab", store_true) = False,
-    branch: Param("The branch", str) = "main",
+    colab_cell_idx: Param("Cell idx where the colab badge must go", int) = 1,
+    branch: Param("The branch", str) = None,
 ):
 
     path = Path(path)
     files = find_nbs(path)
     assert len(files) > 0, "There is no `ipynb` notebooks in the path you submited"
 
-    for i, nb_path in enumerate(files):
-        if colab_cell_idx != -1:
-            print(f"Add badge to {nb_path}")
-            nb = add_colab_badge(nb_path, branch=branch, idx=colab_cell_idx, meta=colab_meta)
-            write_nb(nb, nb_path)
+    for nb_path in files:
+        print(f"Add colab badge to {nb_path}")
+        nb = read_nb(nb_path)
+        nb = add_colab_badge(nb, nb_path, branch=branch, idx=colab_cell_idx)
+        write_nb(nb, nb_path)
