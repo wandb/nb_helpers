@@ -1,14 +1,15 @@
-import io, json, sys, re, csv
+import io, json, sys, re, csv, fileinput
 from types import SimpleNamespace
 from typing import Union
 from fastcore.foundation import L
 
+from datetime import datetime
 import nbformat
 from nbformat import NotebookNode
 from rich import box
 from rich.table import Table
 from rich.console import Console
-from fastcore.basics import ifnone, listify
+from fastcore.basics import ifnone, listify, store_attr
 from fastcore.xtras import run
 from pathlib import Path
 
@@ -37,21 +38,45 @@ def remove_rich_format(text):
 
 
 # log
+def csv_to_md(csv_file_path, delimiter=";"):        
+    "From csv file to markdown table, useful for github posting"
+    output_file = Path(csv_file_path).with_suffix(".md")
+    csv_dict = csv.DictReader(open(csv_file_path, encoding="UTF-8"), delimiter=delimiter)
+    list_of_rows = [dict_row for dict_row in csv_dict]
+    headers = list(list_of_rows[0].keys())
+    md_string = " | "
+    for header in headers:
+        md_string += header+" |"
+
+    md_string += "\n |"
+    for i in range(len(headers)):
+        md_string += "--- | "
+
+    md_string += "\n"
+    for row in list_of_rows:
+        md_string += " | "
+        for header in headers:
+            md_string += row[header]+" | "
+        md_string += "\n"
+
+    # writing md_string to the output_file
+    file = open(output_file, "w", encoding="UTF-8")
+    file.write(md_string)
+    file.close()
+
+    print("The markdown file has been created!!!")
+
 class RichLogger:
     "A simple logger that logs to a file and the rich console"
 
-    def __init__(self, columns=["#", "name"], colab=True, out_file="summary.csv", delimiter=";", width=180):
+    def __init__(self, columns=["#", "name"], colab=True, out_file="summary_table.csv", delimiter=";", width=180, md=True):
         self.console = Console(width=width, record=True)
         print(f"CONSOLE.is_terminal(): {self.console.is_terminal}")
 
         # beautiful rich table
-        self.table = create_table(columns + (["colab"] if colab else []))
-
-        # outfile setup
-        # logs_folder = git_local_repo(list(Path.cwd().iterdir())[0]) / "logs"
-        # if not logs_folder.exists():
-        #     logs_folder.mkdir()
-        # out_file = logs_folder / out_file
+        store_attr()
+        columns = columns + (["colab"] if colab else [])
+        self.table = create_table(columns=columns)
         self.log(f"Writing output to {out_file}")
         self.csv_file = open(out_file, "w", newline="")
         self.csv_writer = csv.writer(self.csv_file, delimiter=delimiter)
@@ -64,16 +89,38 @@ class RichLogger:
     def _format_colab_link(colab_link):
         return f"[link={colab_link}]open[link]"
 
+    @staticmethod
+    def _format_colab_link_md(colab_link):
+        return f"[open]({colab_link})"
+
     def writerow(self, row, colab_link=None):
-        self.csv_writer.writerow([remove_rich_format(e) for e in row])
+        self.csv_writer.writerow([remove_rich_format(e) for e in row]+[self._format_colab_link_md(colab_link)])
         row = list(row) + [self._format_colab_link(colab_link)]
         self.table.add_row(*row)
 
     def finish(self):
         self.csv_file.close()
+        if self.md:
+            csv_to_md(self.out_file, delimiter=self.delimiter)
         self.console.print(self.table)
         self.console.print("END!")
 
+    def create_github_issue(self, github_issue_file="github_issue.md", table=True, message=None):
+        github_issue_file = Path(github_issue_file)
+        with open(github_issue_file, "w", encoding="utf-8") as file:
+            header = (
+                f"# Summary: {today()}\n"
+                "> This file was created automatically!\n\n"
+                "To generate this table run:\n"
+                "```bash\n$ nb_helpers.summary_nbs --path=tests\n```\n"
+            )
+            file.write(header)
+            if table:
+                table = open("summary_table.md", encoding="utf-8")
+                file.write(table.read())
+                table.close()
+            if message is not None:
+                file.write(message)
 
 # nb
 def is_nb(fname: Path):
@@ -208,3 +255,12 @@ def git_last_commit(fname, branch="master"):
     "Gets the last commit on fname"
     commit_id = run(f"git rev-list -1 {branch} {fname}")
     return commit_id
+
+
+def today():
+    "datetime object containing current date and time"
+    now = datetime.now()
+
+    # dd/mm/YY H:M:S
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    return dt_string
