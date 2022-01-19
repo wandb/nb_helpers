@@ -262,6 +262,7 @@ def git_last_commit(fname, branch="master"):
     return commit_id
 
 
+# other stuff
 def today():
     "datetime object containing current date and time"
     now = datetime.now()

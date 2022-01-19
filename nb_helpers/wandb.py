@@ -8,6 +8,7 @@ from fastcore.basics import listify
 from nb_helpers.utils import (
     detect_imported_libs,
     git_local_repo,
+    git_main_name,
     search_string_in_nb,
     read_nb,
     find_nbs,
@@ -77,7 +78,7 @@ def summary_nbs(
             ", ".join(libs),
             str(colab_cell_idx) if colab_cell_idx != -1 else "",
         ]
-        colab_link = get_colab_url(nb_path)
+        colab_link = get_colab_url(nb_path, branch=git_main_name(nb_path))
         logger.writerow(row, colab_link)
     logger.finish()
 
