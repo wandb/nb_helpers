@@ -64,49 +64,65 @@ def csv_to_md(csv_file_path, delimiter=";"):
     file.write(md_string)
     file.close()
 
-    print("The markdown file has been created!!!")
-
 
 class RichLogger:
     "A simple logger that logs to a file and the rich console"
 
     def __init__(
-        self, columns=["#", "name"], colab=True, out_file="summary_table.csv", delimiter=";", width=180, md=True
+        self, columns, out_file="summary_table.csv", width=180
     ):
+        self.data = []
+        self.links = []
         self.console = Console(width=width, record=True)
         print(f"CONSOLE.is_terminal(): {self.console.is_terminal}")
 
         # beautiful rich table
         store_attr()
-        columns = columns + (["colab"] if colab else [])
-        self.table = create_table(columns=columns)
+        
         self.log(f"Writing output to {out_file}")
+    
+
+    def writerow(self, row, colab_link=None):
+        self.data.append(row)
+        self.links.append(colab_link)
+
+    def to_csv(self, out_file, delimiter=';'):
         self.csv_file = open(out_file, "w", newline="")
         self.csv_writer = csv.writer(self.csv_file, delimiter=delimiter)
-        self.csv_writer.writerow(columns)
+        # write header
+        self.csv_writer.writerow(self.columns)
+        for row, link in zip(self.data, self.links):
+            fname = self._format_colab_link_md(link, row[0])
+            self.csv_writer.writerow([fname]+[remove_rich_format(e) for e in  row[1:]])
+        self.csv_file.close()
+
+    def to_table(self, enum=True):
+        columns = (["#"] + self.columns) if enum else self.columns
+        table = create_table(columns=columns)
+        for i, (row, link) in enumerate(zip(self.data, self.links)):
+            fname = self._format_colab_link(link, row[0])
+            table.add_row(f'{i}', fname, *row[1:])
+        self.console.print(table)
+
+    def to_md(self, out_file):
+        csv_file = Path(out_file).with_suffix(".csv")
+        self.to_csv(csv_file)
+        csv_to_md(csv_file)
+        self.log(f"The markdown file [red]{out_file}[/red] has been created!!!")
 
     def log(self, text):
         self.console.print(text)
 
-    @staticmethod
-    def _format_colab_link(colab_link):
-        return f"[link={colab_link}]open[link]"
+
 
     @staticmethod
-    def _format_colab_link_md(colab_link):
-        return f"[open]({colab_link})"
+    def _format_colab_link(colab_link, fname):
+        return f"[link={colab_link}]{fname}[link]"
 
-    def writerow(self, row, colab_link=None):
-        self.csv_writer.writerow([remove_rich_format(e) for e in row] + [self._format_colab_link_md(colab_link)])
-        row = list(row) + [self._format_colab_link(colab_link)]
-        self.table.add_row(*row)
+    @staticmethod
+    def _format_colab_link_md(colab_link, fname):
+        return f"[{fname}]({colab_link})"
 
-    def finish(self):
-        self.csv_file.close()
-        if self.md:
-            csv_to_md(self.out_file, delimiter=self.delimiter)
-        self.console.print(self.table)
-        self.console.print("END!")
 
     def create_github_issue(self, github_issue_file="github_issue.md", table=True, message=None):
         github_issue_file = Path(github_issue_file)
@@ -119,6 +135,7 @@ class RichLogger:
             )
             file.write(header)
             if table:
+                self.to_md("summary_table.md")
                 table = open("summary_table.md", encoding="utf-8")
                 file.write(table.read())
                 table.close()

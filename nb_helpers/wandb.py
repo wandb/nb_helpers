@@ -52,16 +52,16 @@ def summary_nbs(
 ):
     path = Path(path)
     # out_file = (path.parent / out_file).with_suffix(".csv")
-    logger = RichLogger(columns=["#", "fname", "tracker", "wandb", "python libs", "colab_idx"], out_file=out_file)
+    logger = RichLogger(columns=["fname", "tracker", "wandb", "python libs", "colab_idx"], out_file=out_file)
 
     files = find_nbs(path)
     assert len(files) > 0, "There is no `ipynb` notebooks in the path you submited"
 
     logger.log(f"Reading {len(files)} notebooks")
 
-    repo_path = git_local_repo(files[0])
+    # repo_path = git_local_repo(files[0])
 
-    for i, nb_path in enumerate(files):
+    for nb_path in files:
         nb = read_nb(nb_path)
         tracker_id = get_wandb_tracker(nb)
         fname = nb_path.name  # nb_path.relative_to(repo_path)
@@ -69,7 +69,6 @@ def summary_nbs(
         libs = detect_imported_libs(nb)
         colab_cell_idx = has_colab_badge(nb)
         row = [
-            f"{i+1}",
             str(fname),
             tracker_id,
             ", ".join(features),
@@ -78,7 +77,9 @@ def summary_nbs(
         ]
         colab_link = get_colab_url(nb_path, branch=git_main_name(nb_path))
         logger.writerow(row, colab_link)
-    logger.finish()
+    logger.to_table()
+    logger.to_csv(Path(out_file).with_suffix(".csv"))
+    logger.to_md(Path(out_file).with_suffix(".md"))
 
     if github_issue:
         logger.create_github_issue()

@@ -25,12 +25,12 @@ STATUS = SimpleNamespace(
 )
 
 
-def _format_row(fname: Path, status: str, time: str, xtra_col=None) -> tuple:
+def _format_row(fname: Path, status: str, time: str, xtra_col=None, fname_only:bool=True) -> tuple:
     "Format one row for a rich.Table"
 
     formatted_status = getattr(STATUS, status.lower())
-
-    row = (str(fname), formatted_status, f"{int(time)} s")
+    fname = fname.name if fname_only else fname
+    row = (str(fname), formatted_status, f"{int(time)}s")
     if len(listify(xtra_col)) > 0:
         row += (str(xtra_col),)
     return row
@@ -101,18 +101,19 @@ def run_nbs(
     no_run: Param("Do not run any notebook", store_true) = False,
     post_issue: Param("Post the failure in github", store_true) = False,
 ):
-    logger = RichLogger(columns=["fname", "status", "t[s]"], out_file="run.csv")
+    logger = RichLogger(columns=["fname", "status", "t[s]"])
     path = Path(path)
     files = find_nbs(path)
 
     failed_nbs = {}
     for nb_path in track(files, description="Running nbs..."):
-        row, e = run_one(nb_path, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name, no_run=no_run)
-        pprint(f" > {row[0]:80} | {row[1]:40} | {row[2]:5} ")
-        logger.writerow(row, colab_link=get_colab_url(nb_path))
+        (fname, run_status, runtime), e = run_one(nb_path, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name, no_run=no_run)
+        pprint(f" > {fname:80} | {run_status:40} | {runtime:5} ")
+        logger.writerow([fname, run_status, runtime], colab_link=get_colab_url(nb_path))
         time.sleep(0.1)
         if e is not None:
             failed_nbs[str(nb_path)] = e
 
-    logger.finish()
+    logger.to_table()
+    logger.to_md("run.md")
     return failed_nbs
