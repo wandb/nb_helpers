@@ -101,7 +101,7 @@ def run_nbs(
     no_run: Param("Do not run any notebook", store_true) = False,
     post_issue: Param("Post the failure in github", store_true) = False,
 ):
-    logger = RichLogger(columns=["Notebook Path", "Status", "Run Time"], out_file="run.csv")
+    logger = RichLogger(columns=["fname", "status", "t[s]"], out_file="run.csv")
     path = Path(path)
     files = find_nbs(path)
 

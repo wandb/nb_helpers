@@ -52,9 +52,7 @@ def summary_nbs(
 ):
     path = Path(path)
     # out_file = (path.parent / out_file).with_suffix(".csv")
-    logger = RichLogger(
-        columns=["#", "nb name", "tracker", "wandb features", "python libs", "colab_cell"], out_file=out_file
-    )
+    logger = RichLogger(columns=["#", "fname", "tracker", "wandb", "python libs", "colab_idx"], out_file=out_file)
 
     files = find_nbs(path)
     assert len(files) > 0, "There is no `ipynb` notebooks in the path you submited"
@@ -66,7 +64,7 @@ def summary_nbs(
     for i, nb_path in enumerate(files):
         nb = read_nb(nb_path)
         tracker_id = get_wandb_tracker(nb)
-        fname = nb_path.name #nb_path.relative_to(repo_path)
+        fname = nb_path.name  # nb_path.relative_to(repo_path)
         features = search_code(nb, wandb_features)
         libs = detect_imported_libs(nb)
         colab_cell_idx = has_colab_badge(nb)
