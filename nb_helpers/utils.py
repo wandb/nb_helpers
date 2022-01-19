@@ -124,6 +124,7 @@ class RichLogger:
                 table.close()
             if message is not None:
                 file.write(message)
+        self.log(f"Creating github issue via file: {github_issue_file}")
 
 
 # nb
