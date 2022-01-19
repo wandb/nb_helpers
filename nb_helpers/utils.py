@@ -197,12 +197,13 @@ def extract_libs(strings):
     libs = []
     for string in strings:
         if "from" in string:
-            string = _search_with_regex(between_from_import_regex, string).split(".")[0]
+            string = _search_with_regex(between_from_import_regex, string).split(".")[0].replace(" ", "")
         else:
-            string = _search_with_regex(after_import_regex, string)
+            string = _search_with_regex(after_import_regex, string).replace(" ", "")
             if "as" in string:
-                string = _search_with_regex(before_as_regex, string)
-        libs.append(string.replace(" ", "").split(","))
+                string = _search_with_regex(before_as_regex, string).replace(" ", "")
+        if string:
+            libs.append(string.split(","))
     return L(libs).concat()
 
 
