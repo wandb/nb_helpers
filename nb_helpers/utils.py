@@ -38,7 +38,7 @@ def remove_rich_format(text):
 
 
 # log
-def csv_to_md(csv_file_path, delimiter=";"):        
+def csv_to_md(csv_file_path, delimiter=";"):
     "From csv file to markdown table, useful for github posting"
     output_file = Path(csv_file_path).with_suffix(".md")
     csv_dict = csv.DictReader(open(csv_file_path, encoding="UTF-8"), delimiter=delimiter)
@@ -46,7 +46,7 @@ def csv_to_md(csv_file_path, delimiter=";"):
     headers = list(list_of_rows[0].keys())
     md_string = " | "
     for header in headers:
-        md_string += header+" |"
+        md_string += header + " |"
 
     md_string += "\n |"
     for i in range(len(headers)):
@@ -56,7 +56,7 @@ def csv_to_md(csv_file_path, delimiter=";"):
     for row in list_of_rows:
         md_string += " | "
         for header in headers:
-            md_string += row[header]+" | "
+            md_string += row[header] + " | "
         md_string += "\n"
 
     # writing md_string to the output_file
@@ -66,10 +66,13 @@ def csv_to_md(csv_file_path, delimiter=";"):
 
     print("The markdown file has been created!!!")
 
+
 class RichLogger:
     "A simple logger that logs to a file and the rich console"
 
-    def __init__(self, columns=["#", "name"], colab=True, out_file="summary_table.csv", delimiter=";", width=180, md=True):
+    def __init__(
+        self, columns=["#", "name"], colab=True, out_file="summary_table.csv", delimiter=";", width=180, md=True
+    ):
         self.console = Console(width=width, record=True)
         print(f"CONSOLE.is_terminal(): {self.console.is_terminal}")
 
@@ -94,7 +97,7 @@ class RichLogger:
         return f"[open]({colab_link})"
 
     def writerow(self, row, colab_link=None):
-        self.csv_writer.writerow([remove_rich_format(e) for e in row]+[self._format_colab_link_md(colab_link)])
+        self.csv_writer.writerow([remove_rich_format(e) for e in row] + [self._format_colab_link_md(colab_link)])
         row = list(row) + [self._format_colab_link(colab_link)]
         self.table.add_row(*row)
 
@@ -121,6 +124,7 @@ class RichLogger:
                 table.close()
             if message is not None:
                 file.write(message)
+
 
 # nb
 def is_nb(fname: Path):

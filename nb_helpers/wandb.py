@@ -84,6 +84,7 @@ def summary_nbs(
     if github_issue:
         logger.create_github_issue()
 
+
 @call_parse
 def fix_nbs(
     path: Param("A path to nb files", str) = ".",
