@@ -204,7 +204,7 @@ def extract_libs(strings):
                 string = _search_with_regex(before_as_regex, string).replace(" ", "")
         if string:
             libs.append(string.split(","))
-    return L(libs).concat()
+    return L(libs).concat().unique()
 
 
 def detect_imported_libs(notebook):
