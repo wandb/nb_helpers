@@ -66,7 +66,7 @@ def summary_nbs(
     for i, nb_path in enumerate(files):
         nb = read_nb(nb_path)
         tracker_id = get_wandb_tracker(nb)
-        fname = nb_path.relative_to(repo_path)
+        fname = nb_path.name #nb_path.relative_to(repo_path)
         features = search_code(nb, wandb_features)
         libs = detect_imported_libs(nb)
         colab_cell_idx = has_colab_badge(nb)
