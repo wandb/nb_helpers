@@ -68,9 +68,7 @@ def csv_to_md(csv_file_path, delimiter=";"):
 class RichLogger:
     "A simple logger that logs to a file and the rich console"
 
-    def __init__(
-        self, columns, out_file="summary_table.csv", width=180
-    ):
+    def __init__(self, columns, out_file="summary_table.csv", width=180):
         self.data = []
         self.links = []
         self.console = Console(width=width, record=True)
@@ -78,22 +76,21 @@ class RichLogger:
 
         # beautiful rich table
         store_attr()
-        
+
         self.log(f"Writing output to {out_file}")
-    
 
     def writerow(self, row, colab_link=None):
         self.data.append(row)
         self.links.append(colab_link)
 
-    def to_csv(self, out_file, delimiter=';'):
+    def to_csv(self, out_file, delimiter=";"):
         self.csv_file = open(out_file, "w", newline="")
         self.csv_writer = csv.writer(self.csv_file, delimiter=delimiter)
         # write header
         self.csv_writer.writerow(self.columns)
         for row, link in zip(self.data, self.links):
             fname = self._format_colab_link_md(link, row[0])
-            self.csv_writer.writerow([fname]+[remove_rich_format(e) for e in  row[1:]])
+            self.csv_writer.writerow([fname] + [remove_rich_format(e) for e in row[1:]])
         self.csv_file.close()
 
     def to_table(self, enum=True):
@@ -101,7 +98,7 @@ class RichLogger:
         table = create_table(columns=columns)
         for i, (row, link) in enumerate(zip(self.data, self.links)):
             fname = self._format_colab_link(link, row[0])
-            table.add_row(f'{i}', fname, *row[1:])
+            table.add_row(f"{i}", fname, *row[1:])
         self.console.print(table)
 
     def to_md(self, out_file):
@@ -113,8 +110,6 @@ class RichLogger:
     def log(self, text):
         self.console.print(text)
 
-
-
     @staticmethod
     def _format_colab_link(colab_link, fname):
         return f"[link={colab_link}]{fname}[link]"
@@ -122,7 +117,6 @@ class RichLogger:
     @staticmethod
     def _format_colab_link_md(colab_link, fname):
         return f"[{fname}]({colab_link})"
-
 
     def create_github_issue(self, github_issue_file="github_issue.md", table=True, message=None):
         github_issue_file = Path(github_issue_file)

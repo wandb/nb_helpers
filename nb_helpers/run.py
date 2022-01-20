@@ -25,7 +25,7 @@ STATUS = SimpleNamespace(
 )
 
 
-def _format_row(fname: Path, status: str, time: str, xtra_col=None, fname_only:bool=True) -> tuple:
+def _format_row(fname: Path, status: str, time: str, xtra_col=None, fname_only: bool = True) -> tuple:
     "Format one row for a rich.Table"
 
     formatted_status = getattr(STATUS, status.lower())
@@ -107,7 +107,9 @@ def run_nbs(
 
     failed_nbs = {}
     for nb_path in track(files, description="Running nbs..."):
-        (fname, run_status, runtime), e = run_one(nb_path, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name, no_run=no_run)
+        (fname, run_status, runtime), e = run_one(
+            nb_path, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name, no_run=no_run
+        )
         pprint(f" > {fname:80} | {run_status:40} | {runtime:5} ")
         logger.writerow([fname, run_status, runtime], colab_link=get_colab_url(nb_path))
         time.sleep(0.1)
