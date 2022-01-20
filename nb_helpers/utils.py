@@ -125,7 +125,7 @@ class RichLogger:
                 f"# Summary: {today()}\n"
                 "> This file was created automatically!\n\n"
                 "To generate this table run:\n"
-                "```bash\n$ nb_helpers.summary_nbs --path=tests\n```\n"
+                "```bash\n$ nb_helpers.summary_nbs\n```\n"
             )
             file.write(header)
             if table:
