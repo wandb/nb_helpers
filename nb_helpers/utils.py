@@ -208,13 +208,13 @@ def extract_libs(strings):
     libs = []
     for string in strings:
         if "from" in string:
-            string = _search_with_regex(between_from_import_regex, string).split(".")[0].replace(" ", "")
+            string = _search_with_regex(between_from_import_regex, string).split(".")[0]
         else:
-            string = _search_with_regex(after_import_regex, string).replace(" ", "")
+            string = _search_with_regex(after_import_regex, string)
             if "as" in string:
-                string = _search_with_regex(before_as_regex, string).replace(" ", "")
+                string = _search_with_regex(before_as_regex, string)
         if string:
-            libs.append(string.split(","))
+            libs.append(string.replace(" ", "").split(","))
     return L(libs).concat().unique()
 
 
