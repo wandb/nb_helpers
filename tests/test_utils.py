@@ -44,7 +44,7 @@ def test_search_string_in_nb():
 # git
 def test_git_origin_repo():
     repo = git_origin_repo(TEST_NB)
-    assert repo == f"wandb/nb_helpers", f"Maybe not a git repo? {repo}"
+    assert repo == f"wandb/nb_helpers", f"Maybe you are in a fork? {repo}"
 
 
 def test_colab_badge():
@@ -69,13 +69,13 @@ def test_guess_libs():
         "from fastcore.basics import ifnone",
     ]
     res = extract_libs(strings)
-    assert res == ["tensorflow", "tf", "numpy", "sys", "os", "fastcore"]
+    assert set(res) == set(["tensorflow", "tf", "numpy", "sys", "os", "fastcore"])
 
 
 def test_detect_libs():
     nb = read_nb(TEST_NB)
     libs = detect_imported_libs(nb)
-    assert libs == ["os", "sys", "logging", "pathlib", "fastcore", "itertools"]
+    assert set(libs) == set(["os", "sys", "logging", "pathlib", "fastcore", "itertools"])
 
     fail_nb = read_nb(FAIL_NB)
     libs = detect_imported_libs(fail_nb)
