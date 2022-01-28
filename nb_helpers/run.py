@@ -64,7 +64,7 @@ def run_one(
     flags: List[str] = None,
     lib_name: str = None,
     no_run: bool = False,
-    pip_install = True,
+    pip_install=True,
 ):
     "Run nb `fname` and timeit, recover exception"
     start = time.time()
@@ -101,7 +101,7 @@ def run_nbs(
     lib_name: Param("Python lib names to filter, eg: tensorflow", str) = None,
     no_run: Param("Do not run any notebook", store_true) = False,
     post_issue: Param("Post the failure in github", store_true) = False,
-    no_install: Param("Do not install anything with pip", store_false) = False
+    no_install: Param("Do not install anything with pip", store_false) = False,
 ):
     logger = RichLogger(columns=["fname", "status", "t[s]"])
     path = Path(path)
@@ -110,7 +110,13 @@ def run_nbs(
     failed_nbs = {}
     for nb_path in track(files, description="Running nbs..."):
         (fname, run_status, runtime), e = run_one(
-            nb_path, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name, no_run=no_run, pip_install=no_install
+            nb_path,
+            verbose=verbose,
+            timeout=timeout,
+            flags=flags,
+            lib_name=lib_name,
+            no_run=no_run,
+            pip_install=no_install,
         )
         pprint(f" > {fname:80} | {run_status:40} | {runtime:5} ")
         logger.writerow([fname, run_status, runtime], colab_link=get_colab_url(nb_path))
