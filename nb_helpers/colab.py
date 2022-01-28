@@ -70,13 +70,12 @@ def add_colab_badge(notebook, fname, branch=None, idx=0, meta={}):
     notebook["cells"].insert(idx, colab_cell)
     return notebook
 
+
 _colab_meta = {
     "accelerator": "GPU",
-    "colab": {
-        "include_colab_link": True,
-        "toc_visible": True
-        },
-    }
+    "colab": {"include_colab_link": True, "toc_visible": True},
+}
+
 
 def add_colab_metadata(notebook, meta=_colab_meta):
     "Adds GPU and colab meta to `notebook`"
