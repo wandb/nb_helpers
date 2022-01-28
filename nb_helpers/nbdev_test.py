@@ -58,8 +58,9 @@ def get_cell_flags(cell):
 class NoExportPreprocessor(ExecutePreprocessor):
     "An `ExecutePreprocessor` that executes cells that don't have a flag in `flags`"
 
-    def __init__(self, flags, **kwargs):
+    def __init__(self, flags, pip_install=True, **kwargs):
         self.flags = flags
+        self.pip_install = pip_install
         super().__init__(**kwargs)
 
     def preprocess_cell(self, cell, resources, index):
@@ -68,5 +69,10 @@ class NoExportPreprocessor(ExecutePreprocessor):
         for f in get_cell_flags(cell):
             if f not in self.flags:
                 return cell, resources
+        if "!pip" in "".join(cell["source"]) and not self.pip_install:
+            code = cell["source"]
+            print(f"Skipping: {code}")
+            return cell, resources
+
         # if check_re(cell, _re_notebook2script): return cell, resources
         return super().preprocess_cell(cell, resources, index)
