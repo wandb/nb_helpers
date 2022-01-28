@@ -47,9 +47,9 @@ def skip_nb(notebook, flags=None, filters=None):
     return skip
 
 
-def exec_nb(notebook, flags=None, timeout=600, use_temp_dir=True):
+def exec_nb(notebook, flags=None, timeout=600, use_temp_dir=True, pip_install=True):
     "run notebook, possible skiping cells with flags"
-    processor = NoExportPreprocessor(flags, timeout=timeout, kernel_name="python3")
+    processor = NoExportPreprocessor(flags, pip_install=pip_install, timeout=timeout, kernel_name="python3")
     processed_nb = nbformat.from_dict(notebook)
     with TemporaryDirectory() as temp_dir:
         resources = {"metadata": {"path": temp_dir}} if use_temp_dir else None
@@ -64,6 +64,7 @@ def run_one(
     flags: List[str] = None,
     lib_name: str = None,
     no_run: bool = False,
+    pip_install = True,
 ):
     "Run nb `fname` and timeit, recover exception"
     start = time.time()
@@ -79,7 +80,7 @@ def run_one(
         if skip or no_run:
             return _format_row(fname, "skip", time.time() - start), None
         else:
-            did_run = exec_nb(notebook, flags, timeout)
+            did_run = exec_nb(notebook, flags, timeout, pip_install=pip_install)
     except Exception as e:
         if verbose:
             print(f"\nError in {fname}:\n{e}")
@@ -100,6 +101,7 @@ def run_nbs(
     lib_name: Param("Python lib names to filter, eg: tensorflow", str) = None,
     no_run: Param("Do not run any notebook", store_true) = False,
     post_issue: Param("Post the failure in github", store_true) = False,
+    no_install: Param("Do not install anything with pip", store_false) = False
 ):
     logger = RichLogger(columns=["fname", "status", "t[s]"])
     path = Path(path)
@@ -108,7 +110,7 @@ def run_nbs(
     failed_nbs = {}
     for nb_path in track(files, description="Running nbs..."):
         (fname, run_status, runtime), e = run_one(
-            nb_path, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name, no_run=no_run
+            nb_path, verbose=verbose, timeout=timeout, flags=flags, lib_name=lib_name, no_run=no_run, pip_install=no_install
         )
         pprint(f" > {fname:80} | {run_status:40} | {runtime:5} ")
         logger.writerow([fname, run_status, runtime], colab_link=get_colab_url(nb_path))
