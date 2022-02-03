@@ -15,4 +15,4 @@ jobs:
         CONTEXT_GITHUB: ${{ toJson(github) }}
       run: |
         pip install -Uq ghapi
-        python .github/scripts/one_in_colab.py
+        python .github/scripts/open_in_colab.py
