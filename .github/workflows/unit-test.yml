@@ -12,18 +12,19 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
-        python-version: '3.7'
+        python-version: '3.8'
     - name: Install dev library
       run: |
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
         pip install -e .
-    - name: Run unit tests
-      run: |
-        coverage run -m pytest
-        coverage html
-    - name: Archive code coverage results
-      uses: actions/upload-artifact@v2
+
+    - name: Run Unit Tests
+      run: pytest -vvv --color=yes --cov=src --cov-append --cov-report=xml tests/
+
+    - name: Upload Coverage to Codecov
+      uses: codecov/codecov-action@v2
       with:
-        name: code-coverage-report
-        path: htmlcov/index.html
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: coverage.xml
+        fail_ci_if_error: true
