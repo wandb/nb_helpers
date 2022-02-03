@@ -1,5 +1,4 @@
 ![CI](https://github.com/wandb/nb_helpers/workflows/CI/badge.svg)
-[![Unit Tests](https://github.com/wandb/nb_helpers/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/wandb/nb_helpers/actions/workflows/unit-tests.yml)
 [![codecov](https://codecov.io/gh/wandb/nb_helpers/branch/main/graph/badge.svg?token=2W6CRFZ7CB)](https://codecov.io/gh/wandb/nb_helpers)
 
 # nb_helpers
