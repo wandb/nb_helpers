@@ -16,5 +16,4 @@ jobs:
       run: |
         pip install -Uq ghapi
         pip install -e .
-        git -C tests/ symbolic-ref --short HEAD
         python .github/scripts/open_in_colab.py
