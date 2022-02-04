@@ -51,7 +51,7 @@ def test_colab_badge():
     nb = read_nb(TEST_NB)
     idx = has_colab_badge(nb)
     assert idx == 1
-    badged_nb = add_colab_badge(nb, TEST_NB)
+    badged_nb = add_colab_badge(nb, TEST_NB, idx=0)
     idx = has_colab_badge(badged_nb)
     assert idx == 0
     fail_nb = read_nb(FAIL_NB)

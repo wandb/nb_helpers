@@ -1,10 +1,10 @@
 from pathlib import Path
 from IPython import get_ipython
-from fastcore.basics import ifnone
+from fastcore.basics import ifnone, listify
 
 import nbformat
 
-from nb_helpers.utils import git_main_name, git_origin_repo, read_nb, git_local_repo
+from nb_helpers.utils import git_main_name, git_origin_repo, read_nb, git_local_repo, search_cell, search_cells
 
 ## colab
 def in_colab():
@@ -35,13 +35,11 @@ _badge_meta = {"id": "view-in-github", "colab_type": "text"}
 
 def _create_colab_cell(url, meta={}, tracker=None):
     "Creates a notebook cell with the `Open In Colab` badge"
+    tracker = listify(tracker)
     kwargs = {
         "cell_type": "markdown",
         "metadata": meta,
-        "source": [
-            f'<a href="{url}" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>',
-            tracker,
-        ],
+        "source": [f'<a href="{url}" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>\n'] + tracker,
     }
     return _new_cell("markdown", **kwargs)
 
@@ -49,7 +47,7 @@ def _create_colab_cell(url, meta={}, tracker=None):
 def has_colab_badge(nb):
     "Check if notebook has colab badge, returns the cell position, -1 if not present"
     for i, cell in enumerate(nb["cells"]):
-        if "Open In Colab" in cell["source"]:
+        if search_cell(cell, "Open In Colab"):
             return i
     return -1
 
