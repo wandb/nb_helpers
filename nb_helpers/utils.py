@@ -241,6 +241,9 @@ def detect_imported_libs(notebook):
 ## Git
 def git_current_branch(fname) -> str:
     "Get current git branch"
+    print(fname)
+    log = run("git log")
+    print(log)
     return run(f"git -C {Path(fname).parent} symbolic-ref --short HEAD")
 
 
