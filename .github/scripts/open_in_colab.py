@@ -1,7 +1,7 @@
 from fastcore.all import *
 from ghapi.all import *
 from nb_helpers.colab import get_colab_url
-from nb_helpers.utils import git_current_branch, is_nb
+from nb_helpers.utils import git_current_branch, git_local_repo, is_nb
 
 
 def create_comment():
@@ -9,6 +9,7 @@ def create_comment():
 
     api = GhApi(owner="wandb", repo="nb_helpers", token=github_token())
     payload = context_github.event
+
     if "workflow" in payload:
         issue = 1
     else:
@@ -16,17 +17,21 @@ def create_comment():
             return
         issue = payload.number
 
+    pr = api.pulls.get(issue)
+    github_repo, branch = pr.head.repo.full_name, pr.head.ref
+
     pr_files = [Path(f.filename) for f in api.pulls.list_files(issue)]
 
     # filter nbs
     nb_files = [f for f in pr_files if is_nb(f)]
 
-    def _get_colab_url2md(fname: Path) -> str:
+    def _get_colab_url2md(fname: Path, github_repo=github_repo, branch=branch) -> str:
         "Create colab links in md"
-        url = get_colab_url(fname, git_current_branch(fname))
-        return f"- [{fname}]({url})\n"
+        fname = fname.relative_to(git_local_repo(fname))
+        colab_url = f"https://colab.research.google.com/github/{github_repo}/blob/{branch}/{str(fname)}"
+        return f"- [{fname}]({colab_url})\n"
 
-    def _create_comment_body(nb_files: list[Path]) -> str:
+    def _create_comment_body(nb_files) -> str:
         "Creates a MD list of fnames with links to colab"
         title = "The following colabs where changed in this PR:\n"
         colab_links = tuple(_get_colab_url2md(f) for f in nb_files)
