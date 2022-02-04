@@ -27,8 +27,9 @@ def create_comment():
 
     def _get_colab_url2md(fname: Path) -> str:
         "Create colab links in md"
-        url = get_colab_url(fname, git_current_branch(fname))
-        return f"- [{fname}]({url})\n"
+        branch = git_current_branch(fname)
+        colab_url = get_colab_url(fname, branch)
+        return f"- [{fname}]({colab_url})\n"
 
     def _create_comment_body(nb_files) -> str:
         "Creates a MD list of fnames with links to colab"
