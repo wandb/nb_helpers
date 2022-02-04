@@ -104,7 +104,7 @@ def fix_nbs(
             if tracker is not None and tracker != "":
                 tracker = f"<!--- @wandbcode{{{tracker}}} -->"
         else:
-            tracker=None
+            tracker = None
         nb = add_colab_badge(nb, nb_path, branch=branch, idx=colab_cell_idx, tracker=tracker)
         add_colab_metadata(nb)
         write_nb(nb, nb_path)

@@ -38,8 +38,10 @@ def _create_colab_cell(url, meta={}, tracker=None):
     kwargs = {
         "cell_type": "markdown",
         "metadata": meta,
-        "source": [f'<a href="{url}" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>', 
-        tracker],
+        "source": [
+            f'<a href="{url}" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>',
+            tracker,
+        ],
     }
     return _new_cell("markdown", **kwargs)
 
