@@ -183,6 +183,7 @@ def search_cell(cell, string) -> bool:
         return True
     return False
 
+
 def search_cells(nb, string: str = None, cell_type=CellType.code):
     "Get cells containing string, you can pass comma separated strings"
     strings = ifnone(string, "").replace(" ", "").split(",")
