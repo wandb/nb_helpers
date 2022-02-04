@@ -9,6 +9,9 @@ def create_comment():
 
     api = GhApi(owner="wandb", repo="nb_helpers", token=github_token())
     payload = context_github.event
+
+    print(payload)
+
     if "workflow" in payload:
         issue = 1
     else:
