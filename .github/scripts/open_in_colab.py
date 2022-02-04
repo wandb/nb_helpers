@@ -11,13 +11,14 @@ def create_comment():
     payload = context_github.event
 
     print(payload)
+    issue = payload.number
 
-    if "workflow" in payload:
-        issue = 1
-    else:
-        if payload.action != "opened":
-            return
-        issue = payload.number
+    # if "workflow" in payload:
+    #     issue = 1
+    # else:
+    #     if payload.action != "opened":
+    #         return
+    #     issue = payload.number
 
     pr_files = [Path(f.filename) for f in api.pulls.list_files(issue)]
 
