@@ -10,15 +10,12 @@ def create_comment():
     api = GhApi(owner="wandb", repo="nb_helpers", token=github_token())
     payload = context_github.event
 
-    print(payload)
-    issue = payload.number
-
-    # if "workflow" in payload:
-    #     issue = 1
-    # else:
-    #     if payload.action != "opened":
-    #         return
-    #     issue = payload.number
+    if "workflow" in payload:
+        issue = 1
+    else:
+        if payload.action != "opened":
+            return
+        issue = payload.number
 
     pr = api.pulls.get(issue)
     github_repo, branch = pr.head.repo.full_name, pr.head.ref
