@@ -175,13 +175,21 @@ def write_nb(notebook, fname: Union[Path, str]):
 CellType = SimpleNamespace(code="code", md="markdown")
 
 
+def search_cell(cell, string) -> bool:
+    "Search string in cell source, can be a list"
+    source = listify(cell["source"])
+    source = "".join(source)
+    if string in source:
+        return True
+    return False
+
 def search_cells(nb, string: str = None, cell_type=CellType.code):
     "Get cells containing string, you can pass comma separated strings"
     strings = ifnone(string, "").replace(" ", "").split(",")
     cells = []
     for cell in nb["cells"]:
         if cell["cell_type"] == cell_type:
-            if any([string in cell["source"] for string in strings]):
+            if any([search_cell(cell, string) for string in strings]):
                 cells.append(cell["source"])
     return cells
 
@@ -230,12 +238,12 @@ def detect_imported_libs(notebook):
 
 
 ## Git
-def git_current_branch(fname):
+def git_current_branch(fname) -> str:
     "Get current git branch"
     return run(f"git -C {Path(fname).parent} symbolic-ref --short HEAD")
 
 
-def git_main_name(fname):
+def git_main_name(fname) -> str:
     "Get the name of master/main branch"
     branches = run(f"git -C {Path(fname).parent} branch")
     return "main" if "main" in branches else "master"
