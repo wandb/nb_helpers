@@ -145,7 +145,7 @@ def is_nb(fname: Path):
 
 
 def find_nbs(path: Path):
-    "Get all nbs on path recursevely"
+    "Get all nbs on path recursively"
     path = Path(path)
     if is_nb(path):
         return [path]

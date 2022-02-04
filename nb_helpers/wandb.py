@@ -1,4 +1,5 @@
 # this is for our internal usage
+from operator import add
 import re
 from pathlib import Path
 from fastcore.script import Param, call_parse, store_true
@@ -7,7 +8,6 @@ from fastcore.basics import listify
 
 from nb_helpers.utils import (
     detect_imported_libs,
-    git_local_repo,
     git_main_name,
     search_string_in_nb,
     read_nb,
@@ -15,7 +15,8 @@ from nb_helpers.utils import (
     RichLogger,
     write_nb,
 )
-from nb_helpers.colab import add_colab_badge, get_colab_url, has_colab_badge
+from nb_helpers.clean import clean_one
+from nb_helpers.colab import add_colab_badge, add_colab_metadata, get_colab_url, has_colab_badge
 
 
 WANDB_FEATURES = "Table,sweep,WandbCallback,WandbLogger,Artifact"
@@ -27,10 +28,7 @@ def get_wandb_tracker(nb):
     for i, cell in enumerate(nb["cells"]):
         if "@wandbcode" in cell["source"]:
             tracker_id = re.search(r"@wandbcode{(.*?)}", cell["source"]).group(1)
-            if i != 0:
-                return f'[yellow]{i}: {tracker_id.split(",")[0]}[/yellow]'  # remove the v param
-            else:
-                return f'[green]{i}: {tracker_id.split(",")[0]}[/green]'  # remove the v param
+            return tracker_id.split(",")[0]
     return ""
 
 
@@ -88,8 +86,9 @@ def summary_nbs(
 @call_parse
 def fix_nbs(
     path: Param("A path to nb files", str) = ".",
-    colab_cell_idx: Param("Cell idx where the colab badge must go", int) = 1,
+    colab_cell_idx: Param("Cell idx where the colab badge must go", int) = 0,
     branch: Param("The branch", str) = None,
+    tracker_on_colab: Param("Add also the tracker to colab cell", store_true) = True,
 ):
 
     path = Path(path)
@@ -98,6 +97,14 @@ def fix_nbs(
 
     for nb_path in files:
         print(f"Add colab badge to {nb_path}")
+        clean_one(nb_path, clear_outs=True)
         nb = read_nb(nb_path)
-        nb = add_colab_badge(nb, nb_path, branch=branch, idx=colab_cell_idx)
+        if tracker_on_colab:
+            tracker = get_wandb_tracker(nb)
+            if tracker is not None and tracker != "":
+                tracker = f"<!--- @wandbcode{{{tracker}}} -->"
+        else:
+            tracker=None
+        nb = add_colab_badge(nb, nb_path, branch=branch, idx=colab_cell_idx, tracker=tracker)
+        add_colab_metadata(nb)
         write_nb(nb, nb_path)
