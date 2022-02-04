@@ -30,7 +30,7 @@ def create_comment():
         url = get_colab_url(fname, git_current_branch(fname))
         return f"- [{fname}]({url})\n"
 
-    def _create_comment_body(nb_files: list[Path]) -> str:
+    def _create_comment_body(nb_files) -> str:
         "Creates a MD list of fnames with links to colab"
         title = "The following colabs where changed in this PR:\n"
         colab_links = tuple(_get_colab_url2md(f) for f in nb_files)
