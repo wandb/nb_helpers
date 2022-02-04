@@ -183,6 +183,7 @@ def search_cell(cell, string) -> bool:
         return True
     return False
 
+
 def search_cells(nb, string: str = None, cell_type=CellType.code):
     "Get cells containing string, you can pass comma separated strings"
     strings = ifnone(string, "").replace(" ", "").split(",")
@@ -240,6 +241,9 @@ def detect_imported_libs(notebook):
 ## Git
 def git_current_branch(fname) -> str:
     "Get current git branch"
+    print(fname)
+    log = run("git log")
+    print(log)
     return run(f"git -C {Path(fname).parent} symbolic-ref --short HEAD")
 
 

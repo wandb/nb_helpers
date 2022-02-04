@@ -14,5 +14,6 @@ jobs:
       env:
         CONTEXT_GITHUB: ${{ toJson(github) }}
       run: |
-        pip install -Uq ghapi nb_helpers
+        pip install -Uq ghapi
+        pip install -e .
         python .github/scripts/open_in_colab.py

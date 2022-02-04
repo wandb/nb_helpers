@@ -22,9 +22,9 @@ jobs:
     - name: Run Unit Tests
       run: pytest -vvv --color=yes --cov=src --cov-append --cov-report=xml tests/
 
-    - name: Upload Coverage to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        file: coverage.xml
-        fail_ci_if_error: true
+    # - name: Upload Coverage to Codecov
+    #   uses: codecov/codecov-action@v2
+    #   with:
+    #     token: ${{ secrets.CODECOV_TOKEN }}
+    #     file: coverage.xml
+    #     fail_ci_if_error: true
