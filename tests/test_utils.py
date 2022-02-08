@@ -1,18 +1,32 @@
 from pathlib import Path
 
+from rich import print
 from nbformat import read
 from tests import TEST_PATH, TEST_NB, FAIL_NB
 from nb_helpers.utils import (
+    create_table,
     detect_imported_libs,
     extract_libs,
     is_nb,
     find_nbs,
     git_origin_repo,
     read_nb,
+    remove_rich_format,
     search_string_in_nb,
 )
 from nb_helpers.colab import in_colab, has_colab_badge, add_colab_badge
 
+# rich
+def test_rich_stuff():
+    flavored_str = "[red]bla bla[/red]"
+    clean_str = remove_rich_format(flavored_str)
+    assert clean_str == "bla bla", f"Fails to remove rich flavor: {flavored_str}!={clean_str}"
+    
+def test_table():
+    "check the table is not broken"
+    table = create_table()
+    print(table)
+    
 
 def test_is_nb():
     bad_names = [
