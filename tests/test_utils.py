@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from rich import print
-from nbformat import read
 from tests import TEST_PATH, TEST_NB, FAIL_NB
 from nb_helpers.utils import (
     create_table,
@@ -21,12 +20,13 @@ def test_rich_stuff():
     flavored_str = "[red]bla bla[/red]"
     clean_str = remove_rich_format(flavored_str)
     assert clean_str == "bla bla", f"Fails to remove rich flavor: {flavored_str}!={clean_str}"
-    
+
+
 def test_table():
     "check the table is not broken"
     table = create_table()
     print(table)
-    
+
 
 def test_is_nb():
     bad_names = [
