@@ -83,13 +83,16 @@ class RichLogger:
         self.data.append(row)
         self.links.append(colab_link)
 
-    def to_csv(self, out_file, delimiter=";"):
+    def to_csv(self, out_file, delimiter=";", format_link=True):
         self.csv_file = open(out_file, "w", newline="")
         self.csv_writer = csv.writer(self.csv_file, delimiter=delimiter)
         # write header
         self.csv_writer.writerow(self.columns)
         for row, link in zip(self.data, self.links):
-            fname = self._format_colab_link_md(link, row[0])
+            if format_link:
+                fname = self._format_colab_link_md(link, row[0])
+            else:
+                fname = row[0]
             self.csv_writer.writerow([fname] + [remove_rich_format(e) for e in row[1:]])
         self.csv_file.close()
 
@@ -146,7 +149,7 @@ def is_nb(fname: Path):
 
 def find_nbs(path: Path):
     "Get all nbs on path recursively"
-    path = Path(path)
+    path = Path(path).absolute()
     if is_nb(path):
         return [path]
     return L([nb for nb in path.rglob("*.ipynb") if is_nb(nb)]).sorted()
@@ -275,9 +278,9 @@ def git_origin_repo(fname):
 def git_local_repo(fname):
     "Get local github repo path"
     fname = Path(fname)
-    repo = git_origin_repo(fname)
-    for p in fname.parents:
-        if p.match(f"*/{repo}"):
+    repo_name = git_origin_repo(fname)
+    for p in fname.absolute().parents:
+        if p.match(f"*/{repo_name}"):
             break
     return p
 
