@@ -10,7 +10,7 @@ from fastcore.script import *
 from rich import print as pprint
 from rich.progress import track
 
-from nb_helpers.utils import find_nbs, search_string_in_nb, read_nb, RichLogger
+from nb_helpers.utils import find_nbs, git_main_name, search_string_in_nb, read_nb, RichLogger
 from nb_helpers.colab import get_colab_url
 from nb_helpers.nbdev_test import NoExportPreprocessor, get_all_flags
 
@@ -107,6 +107,8 @@ def run_nbs(
     path = Path(path)
     files = find_nbs(path)
 
+    branch = git_main_name(files[0])
+
     failed_nbs = {}
     for nb_path in track(files, description="Running nbs..."):
         (fname, run_status, runtime), e = run_one(
@@ -119,7 +121,7 @@ def run_nbs(
             pip_install=no_install,
         )
         pprint(f" > {fname:80} | {run_status:40} | {runtime:5} ")
-        logger.writerow([fname, run_status, runtime], colab_link=get_colab_url(nb_path))
+        logger.writerow([fname, run_status, runtime], colab_link=get_colab_url(nb_path, branch))
         time.sleep(0.1)
         if e is not None:
             failed_nbs[str(nb_path)] = e
