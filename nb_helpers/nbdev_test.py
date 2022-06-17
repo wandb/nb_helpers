@@ -4,8 +4,8 @@
 
 from nbconvert.preprocessors import ExecutePreprocessor
 
-class NoExportPreprocessor(ExecutePreprocessor):
 
+class NoExportPreprocessor(ExecutePreprocessor):
     def __init__(self, pip_install=True, **kwargs):
         self.pip_install = pip_install
         super().__init__(**kwargs)

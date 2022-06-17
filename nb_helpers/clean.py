@@ -9,6 +9,7 @@ from fastprogress import progress_bar
 
 from nb_helpers.utils import print_output, is_nb, find_nbs
 
+
 def _create_table():
     table = Table(show_header=True, header_style="bold magenta")
     table.add_column("Notebook Path", style="dim")
@@ -22,43 +23,57 @@ CLEAN_TABLE = _create_table()
 ## from nbdev.clean
 def rm_execution_count(o):
     "Remove execution count in `o`"
-    if 'execution_count' in o: o['execution_count'] = None
+    if "execution_count" in o:
+        o["execution_count"] = None
+
 
 colab_json = "application/vnd.google.colaboratory.intrinsic+json"
+
+
 def clean_output_data_vnd(o):
     "Remove `application/vnd.google.colaboratory.intrinsic+json` in data entries"
-    if 'data' in o:
-        data = o['data']
+    if "data" in o:
+        data = o["data"]
         if colab_json in data:
-            new_data = {k:v for k,v in data.items() if k != colab_json}
-            o['data'] = new_data
+            new_data = {k: v for k, v in data.items() if k != colab_json}
+            o["data"] = new_data
+
 
 def clean_cell_output(cell):
     "Remove execution count in `cell`"
-    if 'outputs' in cell:
-        for o in cell['outputs']:
+    if "outputs" in cell:
+        for o in cell["outputs"]:
             rm_execution_count(o)
             clean_output_data_vnd(o)
-            o.get('metadata', o).pop('tags', None)
+            o.get("metadata", o).pop("tags", None)
+
 
 cell_metadata_keep = ["hide_input"]
-nb_metadata_keep   = ["kernelspec", "jekyll", "jupytext", "doc"]
+nb_metadata_keep = ["kernelspec", "jekyll", "jupytext", "doc"]
+
 
 def clean_cell(cell, clear_all=False):
     "Clean `cell` by removing superfluous metadata or everything except the input if `clear_all`"
     rm_execution_count(cell)
-    if 'outputs' in cell:
-        if clear_all: cell['outputs'] = []
-        else:         clean_cell_output(cell)
-    if cell['source'] == ['']: cell['source'] = []
-    cell['metadata'] = {} if clear_all else {k:v for k,v in cell['metadata'].items() if k in cell_metadata_keep}
+    if "outputs" in cell:
+        if clear_all:
+            cell["outputs"] = []
+        else:
+            clean_cell_output(cell)
+    if cell["source"] == [""]:
+        cell["source"] = []
+    cell["metadata"] = {} if clear_all else {k: v for k, v in cell["metadata"].items() if k in cell_metadata_keep}
+
 
 def clean_nb(nb, clear_all=False):
     "Clean `nb` from superfluous metadata, passing `clear_all` to `clean_cell`"
-    for c in nb['cells']: clean_cell(c, clear_all=clear_all)
-    nb['metadata'] = {k:v for k,v in nb['metadata'].items() if k in nb_metadata_keep }
+    for c in nb["cells"]:
+        clean_cell(c, clear_all=clear_all)
+    nb["metadata"] = {k: v for k, v in nb["metadata"].items() if k in nb_metadata_keep}
+
 
 ## end nbdev.clean
+
 
 def clean_one(fname: Path, clear_outs: bool = False, disp: bool = False):
     """Clean notebook metadata:

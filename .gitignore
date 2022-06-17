@@ -143,4 +143,5 @@ checklink/cookies.txt
 token
 logs
 02_colab_action.ipynb
-dev_nbs/01_colab_stuff.ipynb
+dev_nbs/*
+outputs/*

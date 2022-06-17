@@ -79,6 +79,7 @@ _colab_meta = {
     "colab": {"include_colab_link": True, "toc_visible": True},
 }
 
+
 def add_colab_metadata(notebook, meta=_colab_meta):
     "Adds GPU and colab meta to `notebook`"
     notebook["metadata"].update(_colab_meta)

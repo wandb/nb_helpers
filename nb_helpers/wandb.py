@@ -14,7 +14,7 @@ from nb_helpers.utils import (
     find_nbs,
     RichLogger,
     write_nb,
-    git_local_repo
+    git_local_repo,
 )
 from nb_helpers.clean import clean_one
 from nb_helpers.colab import add_colab_badge, add_colab_metadata, get_colab_url, has_colab_badge
@@ -64,7 +64,7 @@ def summary_nbs(
     for nb_path in files:
         nb = read_nb(nb_path)
         tracker_id = get_wandb_tracker(nb)
-        fname = nb_path.name  if not full_path else nb_path.relative_to(repo_path)
+        fname = nb_path.name if not full_path else nb_path.relative_to(repo_path)
         features = search_code(nb, wandb_features)
         libs = detect_imported_libs(nb)
         colab_cell_idx = has_colab_badge(nb)
@@ -107,6 +107,7 @@ def fix_nbs(
         add_colab_metadata(nb)
         write_nb(nb, nb_path)
 
+
 @call_parse
 def filter_nbs(
     path: Param("A path to nb files", str) = ".",
@@ -116,7 +117,7 @@ def filter_nbs(
 
     path = Path(path)
 
-    logger = RichLogger(columns=["fname","python libs"], out_file=out_file)
+    logger = RichLogger(columns=["fname", "python libs"], out_file=out_file)
 
     files = find_nbs(path)
     assert len(files) > 0, "There is no `ipynb` notebooks in the path you submited"
