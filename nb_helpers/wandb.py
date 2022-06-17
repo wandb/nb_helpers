@@ -1,19 +1,16 @@
-# this is for our internal usage
-from operator import add
 import re
 from pathlib import Path
 from fastcore.script import Param, call_parse, store_true
 from fastcore.basics import listify
 
+from execnb.nbio import read_nb, write_nb
 
 from nb_helpers.utils import (
     detect_imported_libs,
     git_main_name,
     search_string_in_nb,
-    read_nb,
     find_nbs,
     RichLogger,
-    write_nb,
     git_local_repo,
 )
 from nb_helpers.clean import clean_one
@@ -26,7 +23,7 @@ PYTHON_LIBS = "torch,keras,tensorflow,sklearn,yolo,jax,pandas,numpy,spacy,transf
 
 def get_wandb_tracker(nb):
     "Get the value inside <!--- @wandbcode{tracker} -->"
-    for i, cell in enumerate(nb["cells"]):
+    for cell in nb["cells"]:
         if "@wandbcode" in cell["source"]:
             tracker_id = re.search(r"@wandbcode{(.*?)}", cell["source"]).group(1)
             return tracker_id.split(",")[0]

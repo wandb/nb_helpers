@@ -1,5 +1,6 @@
 import time
 from pathlib import Path
+from logging import warning
 from types import SimpleNamespace
 from typing import Union, List
 from tempfile import TemporaryDirectory
@@ -10,9 +11,13 @@ from fastcore.script import *
 from rich import print as pprint
 from rich.progress import track
 
-from nb_helpers.utils import find_nbs, git_main_name, search_string_in_nb, read_nb, RichLogger
+from execnb.nbio import read_nb as read_nb
+from execnb.shell import CaptureShell
+
+from nb_helpers.utils import find_nbs, git_main_name, search_string_in_nb, RichLogger
 from nb_helpers.colab import get_colab_url
-from nb_helpers.nbdev_test import NoExportPreprocessor
+
+
 
 FEATURES = ["Path", "os", "chain", "Union", "sleep"]
 ## ["WandbCallback", "WandbLogger", "Table", "Artifact", "sweep"]
@@ -44,14 +49,33 @@ def skip_nb(notebook, filters=None):
     return skip
 
 
-def exec_nb(notebook, timeout=600, use_temp_dir=True, pip_install=True):
-    "run notebook, possible skiping cells"
-    processor = NoExportPreprocessor(pip_install=pip_install, timeout=timeout, kernel_name="python3")
-    processed_nb = nbformat.from_dict(notebook)
-    with TemporaryDirectory() as temp_dir:
-        resources = {"metadata": {"path": temp_dir}} if use_temp_dir else None
-        processor.preprocess(processed_nb, resources)
-    return True
+def exec_nb(fname, do_print=False, pip_install=True):
+    "Execute tests in notebook in `fn` "
+    nb = read_nb(fname)
+    def _no_eval(cell):
+        if "pip" in cell.source and not pip_install:
+            return True
+        if cell.cell_type != 'code': 
+            return True
+        else:
+            return False
+    
+    start = time.time()
+    k = CaptureShell(fname)
+    if do_print: print(f'Starting {fname}')
+    k.run_all(nb, exc_stop=True, preproc=_no_eval)
+    res = True
+    if do_print: print(f'- Completed {fname}')
+    return res,time.time()-start
+
+# def exec_nb(notebook, timeout=600, use_temp_dir=True, pip_install=True):
+#     "run notebook, possible skiping cells"
+#     processor = NoExportPreprocessor(pip_install=pip_install, timeout=timeout, kernel_name="python3")
+#     processed_nb = nbformat.from_dict(notebook)
+#     with TemporaryDirectory() as temp_dir:
+#         resources = {"metadata": {"path": temp_dir}} if use_temp_dir else None
+#         processor.preprocess(processed_nb, resources)
+#     return True
 
 
 def run_one(
@@ -63,8 +87,7 @@ def run_one(
     pip_install=False,
 ):
     "Run nb `fname` and timeit, recover exception"
-    start = time.time()
-    did_run, skip, error = False, False, None
+    did_run, skip, error, exec_time = False, False, None, 0
     try:
         # read notebook as dict
         notebook = read_nb(fname)
@@ -73,16 +96,16 @@ def run_one(
         skip = skip_nb(notebook, lib_name)
 
         if skip or no_run:
-            return _format_row(fname, "skip", time.time() - start), None
+            return _format_row(fname, "skip", exec_time), None
         else:
-            did_run = exec_nb(notebook, timeout, pip_install=pip_install)
+            did_run, exec_time = exec_nb(fname, pip_install=pip_install)
     except Exception as e:
         if verbose:
             print(f"\nError in {fname}:\n{e}")
             error = e
         error = e
     return (
-        _format_row(fname, "ok" if did_run else "fail", time.time() - start),
+        _format_row(fname, "ok" if did_run else "fail", exec_time),
         error,
     )
 

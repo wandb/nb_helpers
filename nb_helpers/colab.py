@@ -4,7 +4,7 @@ from fastcore.basics import ifnone, listify
 
 import nbformat
 
-from nb_helpers.utils import git_main_name, git_origin_repo, read_nb, git_local_repo, search_cell, search_cells
+from nb_helpers.utils import git_main_name, git_origin_repo, git_local_repo, search_cell
 
 ## colab
 def in_colab():
@@ -35,14 +35,11 @@ _badge_meta = {"id": "view-in-github", "colab_type": "text"}
 
 def _create_colab_cell(url, meta={}, tracker=None):
     "Creates a notebook cell with the `Open In Colab` badge"
-    tracker = listify(tracker)
+    tracker = ifnone(tracker, "")
     kwargs = {
         "cell_type": "markdown",
         "metadata": meta,
-        "source": [
-            f'<a href="{url}" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>\n'
-        ]
-        + tracker,
+        "source": f'<a href="{url}" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>\n'+tracker,
     }
     return _new_cell("markdown", **kwargs)
 

@@ -1,6 +1,5 @@
 import io, json, sys
 from pathlib import Path
-import traceback
 
 from rich import print
 from rich.console import Console
@@ -29,7 +28,6 @@ def rm_execution_count(o):
 
 
 colab_json = "application/vnd.google.colaboratory.intrinsic+json"
-
 
 def clean_output_data_vnd(o):
     "Remove `application/vnd.google.colaboratory.intrinsic+json` in data entries"

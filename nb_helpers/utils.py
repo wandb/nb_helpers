@@ -4,8 +4,6 @@ from typing import Union
 from fastcore.foundation import L
 
 from datetime import datetime
-import nbformat
-from nbformat import NotebookNode
 from rich import box
 from rich.table import Table
 from rich.console import Console
@@ -162,17 +160,6 @@ def print_output(notebook):  # pragma: no cover
     output_stream.write(x)
     output_stream.write("\n")
     output_stream.flush()
-
-
-def read_nb(fname: Union[Path, str]) -> NotebookNode:
-    "Read the notebook in `fname`."
-    with open(Path(fname), "r", encoding="utf8") as f:
-        return nbformat.reads(f.read(), as_version=4)
-
-
-def write_nb(notebook, fname: Union[Path, str]):
-    "Dump `notebook` to `fname`"
-    nbformat.write(notebook, str(fname), version=4)
 
 
 CellType = SimpleNamespace(code="code", md="markdown")
