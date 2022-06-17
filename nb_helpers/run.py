@@ -12,7 +12,7 @@ from rich.progress import track
 
 from nb_helpers.utils import find_nbs, git_main_name, search_string_in_nb, read_nb, RichLogger
 from nb_helpers.colab import get_colab_url
-from nb_helpers.nbdev_test import NoExportPreprocessor, get_all_flags
+from nb_helpers.nbdev_test import NoExportPreprocessor
 
 FEATURES = ["Path", "os", "chain", "Union", "sleep"]
 ## ["WandbCallback", "WandbLogger", "Table", "Artifact", "sweep"]
@@ -36,20 +36,17 @@ def _format_row(fname: Path, status: str, time: str, xtra_col=None, fname_only: 
     return row
 
 
-def skip_nb(notebook, flags=None, filters=None):
-    "check for notebook flags: all_skip, all_slow and filters: tensorflow, pytorch, ..."
+def skip_nb(notebook, filters=None):
+    "check for notebook filters: tensorflow, pytorch, ..."
     skip = False
-    for f in get_all_flags(notebook["cells"]):
-        if f not in listify(flags):
-            skip = True
     if not search_string_in_nb(notebook, filters):
         skip = True
     return skip
 
 
-def exec_nb(notebook, flags=None, timeout=600, use_temp_dir=True, pip_install=True):
-    "run notebook, possible skiping cells with flags"
-    processor = NoExportPreprocessor(flags, pip_install=pip_install, timeout=timeout, kernel_name="python3")
+def exec_nb(notebook, timeout=600, use_temp_dir=True, pip_install=True):
+    "run notebook, possible skiping cells"
+    processor = NoExportPreprocessor(pip_install=pip_install, timeout=timeout, kernel_name="python3")
     processed_nb = nbformat.from_dict(notebook)
     with TemporaryDirectory() as temp_dir:
         resources = {"metadata": {"path": temp_dir}} if use_temp_dir else None
@@ -61,7 +58,6 @@ def run_one(
     fname: Union[Path, str],
     verbose: bool = False,
     timeout: int = 600,
-    flags: List[str] = None,
     lib_name: str = None,
     no_run: bool = False,
     pip_install=True,
@@ -69,18 +65,17 @@ def run_one(
     "Run nb `fname` and timeit, recover exception"
     start = time.time()
     did_run, skip, error = False, False, None
-    flags = listify(flags)
     try:
         # read notebook as dict
         notebook = read_nb(fname)
 
         # check if notebooks has to be runned
-        skip = skip_nb(notebook, flags, lib_name)
+        skip = skip_nb(notebook, lib_name)
 
         if skip or no_run:
             return _format_row(fname, "skip", time.time() - start), None
         else:
-            did_run = exec_nb(notebook, flags, timeout, pip_install=pip_install)
+            did_run = exec_nb(notebook, timeout, pip_install=pip_install)
     except Exception as e:
         if verbose:
             print(f"\nError in {fname}:\n{e}")
@@ -96,7 +91,6 @@ def run_one(
 def run_nbs(
     path: Param("A path to nb files", str) = ".",
     verbose: Param("Print errors along the way", store_true) = False,
-    flags: Param("Space separated list of flags", str) = None,
     timeout: Param("Max runtime for each notebook, in seconds", int) = 600,
     lib_name: Param("Python lib names to filter, eg: tensorflow", str) = None,
     no_run: Param("Do not run any notebook", store_true) = False,
@@ -115,7 +109,6 @@ def run_nbs(
             nb_path,
             verbose=verbose,
             timeout=timeout,
-            flags=flags,
             lib_name=lib_name,
             no_run=no_run,
             pip_install=no_install,
