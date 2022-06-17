@@ -2,3 +2,4 @@ rich
 nbconvert
 nbformat
 fastcore
+ipython
