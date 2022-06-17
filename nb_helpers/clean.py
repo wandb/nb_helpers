@@ -1,11 +1,12 @@
 import io, json, sys
 from pathlib import Path
+import traceback
 
 from rich import print
 from rich.console import Console
 from rich.table import Table
+from rich.progress import track
 from fastcore.script import *
-from fastprogress import progress_bar
 
 from nb_helpers.utils import print_output, is_nb, find_nbs
 
@@ -93,11 +94,10 @@ def clean_one(fname: Path, clear_outs: bool = False, disp: bool = False):
             f.write(x)
             f.write("\n")
 
-
 def clean_all(path: Path, clear_outs=True, disp=False):
     "Apply clean to all nbs inside path recursvely"
 
-    for nb in progress_bar(find_nbs(path), leave=False):
+    for nb in track(find_nbs(path), "Cleaning nbs..."):
         try:
             clean_one(nb, clear_outs, disp)
             CLEAN_TABLE.add_row(str(nb), "[green]Ok[/green]:heavy_check_mark:")
