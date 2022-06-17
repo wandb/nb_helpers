@@ -1,5 +1,4 @@
 rich
-nbconvert
-nbformat
+execnb
 fastcore
 ipython
