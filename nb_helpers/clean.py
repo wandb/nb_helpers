@@ -94,6 +94,7 @@ def clean_one(fname: Path, clear_outs: bool = False, disp: bool = False):
             f.write(x)
             f.write("\n")
 
+
 def clean_all(path: Path, clear_outs=True, disp=False):
     "Apply clean to all nbs inside path recursvely"
 

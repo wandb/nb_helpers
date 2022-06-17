@@ -13,7 +13,8 @@ class NoExportPreprocessor(ExecutePreprocessor):
     def preprocess_cell(self, cell, resources, index):
         if "source" not in cell or cell["cell_type"] != "code":
             return cell, resources
-        if "!pip" in "".join(cell["source"]) and not self.pip_install:
+        cell_source = "".join(cell["source"])
+        if "pip" in cell_source and not self.pip_install:
             code = cell["source"]
             print(f"Skipping: {code}")
             return cell, resources
