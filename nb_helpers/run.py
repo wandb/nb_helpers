@@ -117,7 +117,6 @@ def run_nbs(
     timeout: Param("Max runtime for each notebook, in seconds", int) = 600,
     lib_name: Param("Python lib names to filter, eg: tensorflow", str) = None,
     no_run: Param("Do not run any notebook", store_true) = False,
-    post_issue: Param("Post the failure in github", store_true) = False,
     pip_install: Param("Do not install anything with pip", store_true) = False,
 ):
     logger = RichLogger(columns=["fname", "status", "t[s]"])
