@@ -1,4 +1,4 @@
-import io, json, sys, re, csv, fileinput
+import io, json, sys, re, csv, traceback
 from types import SimpleNamespace
 from typing import Union
 from fastcore.foundation import L
@@ -63,6 +63,20 @@ def csv_to_md(csv_file_path, delimiter=";"):
     file.close()
 
 
+STATUS = SimpleNamespace(
+    ok="[green]Ok[/green]:heavy_check_mark:", fail="[red]Fail[/red]", skip="[green]Skipped[/green]:heavy_check_mark:"
+)
+
+def _format_row(fname: Path, status: str, time: str, xtra_col=None, fname_only: bool = True) -> tuple:
+    "Format one row for a rich.Table"
+
+    formatted_status = getattr(STATUS, status.lower())
+    fname = fname.name if fname_only else fname
+    row = (str(fname), formatted_status, f"{int(time)}s")
+    if len(listify(xtra_col)) > 0:
+        row += (str(xtra_col),)
+    return row
+
 class RichLogger:
     "A simple logger that logs to a file and the rich console"
 
@@ -80,6 +94,11 @@ class RichLogger:
     def writerow(self, row, colab_link=None):
         self.data.append(row)
         self.links.append(colab_link)
+
+    def writerow_incolor(self, fname, status, time, colab_link):
+        "Same as write row, but color status"
+        row = _format_row(fname, status, time)
+        self.writerow(row, colab_link)
 
     def to_csv(self, out_file, delimiter=";", format_link=True):
         self.csv_file = open(out_file, "w", newline="")
@@ -106,10 +125,16 @@ class RichLogger:
         csv_file = Path(out_file).with_suffix(".csv")
         self.to_csv(csv_file)
         csv_to_md(csv_file)
-        self.log(f"The markdown file [red]{out_file}[/red] has been created!!!")
+        self.log(f"Output table saved to [red]{out_file}[/red]")
 
     def log(self, text):
         self.console.print(text)
+
+    def log_failed(self, failed_nbs:dict):
+        with open('traceback.txt', 'a') as f:
+            for nb_name, e in failed_nbs.items():
+                f.write(str(e))
+                f.write(traceback.format_exc())
 
     @staticmethod
     def _format_colab_link(colab_link, fname):

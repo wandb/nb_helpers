@@ -11,7 +11,7 @@ from nb_helpers.utils import (
     read_nb,
     search_string_in_nb,
 )
-from nb_helpers.colab import in_colab, has_colab_badge, add_colab_badge
+from nb_helpers.colab import has_colab_badge, add_colab_badge
 
 
 def test_is_nb():
@@ -29,9 +29,6 @@ def test_find_nbs():
     assert ("test_nb.ipynb" in valid_nbs) and ("test_nb2.ipynb" in valid_nbs)
 
 
-# colab
-def test_colab():
-    assert not in_colab(), f"We are not in colab"
 
 
 # nb

@@ -1,17 +1,10 @@
 from pathlib import Path
 from IPython import get_ipython
-from fastcore.basics import ifnone, listify
+from fastcore.basics import ifnone
 
 from execnb.nbio import NbCell
 
 from nb_helpers.utils import git_main_name, git_origin_repo, git_local_repo, search_cell
-
-## colab
-def in_colab():
-    "Check if we are in Colab"
-    if "google.colab" in str(get_ipython()):  # pragma: no cover
-        return True
-    return False
 
 
 def get_colab_url(fname, branch="main"):
