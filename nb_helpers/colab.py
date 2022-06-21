@@ -1,17 +1,10 @@
 from pathlib import Path
 from IPython import get_ipython
-from fastcore.basics import ifnone, listify
+from fastcore.basics import ifnone
 
-import nbformat
+from execnb.nbio import NbCell
 
-from nb_helpers.utils import git_main_name, git_origin_repo, read_nb, git_local_repo, search_cell, search_cells
-
-## colab
-def in_colab():
-    "Check if we are in Colab"
-    if "google.colab" in str(get_ipython()):  # pragma: no cover
-        return True
-    return False
+from nb_helpers.utils import git_main_name, git_origin_repo, git_local_repo, search_cell
 
 
 def get_colab_url(fname, branch="main"):
@@ -22,29 +15,19 @@ def get_colab_url(fname, branch="main"):
     return f"https://colab.research.google.com/github/{github_repo}/blob/{branch}/{str(fname)}"
 
 
-def _new_cell(type="code", **kwargs):
-    "Add V4 nbformat type cell"
-    if type == "code":
-        return nbformat.v4.new_code_cell(**kwargs)
-    if type == "markdown":
-        return nbformat.v4.new_markdown_cell(**kwargs)
-
-
 _badge_meta = {"id": "view-in-github", "colab_type": "text"}
 
 
 def _create_colab_cell(url, meta={}, tracker=None):
     "Creates a notebook cell with the `Open In Colab` badge"
-    tracker = listify(tracker)
-    kwargs = {
+    tracker = ifnone(tracker, "")
+    data = {
         "cell_type": "markdown",
         "metadata": meta,
-        "source": [
-            f'<a href="{url}" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>\n'
-        ]
+        "source": f'<a href="{url}" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>\n'
         + tracker,
     }
-    return _new_cell("markdown", **kwargs)
+    return NbCell(-1, data)
 
 
 def has_colab_badge(nb):
@@ -82,6 +65,5 @@ _colab_meta = {
 
 def add_colab_metadata(notebook, meta=_colab_meta):
     "Adds GPU and colab meta to `notebook`"
-    notebook["accelerator"] = _colab_meta["accelerator"]
-    notebook["metadata"]["colab"] = _colab_meta["colab"]
+    notebook["metadata"].update(_colab_meta)
     return notebook

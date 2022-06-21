@@ -1,5 +1,4 @@
 rich
-nbdev
-nbformat
+execnb
 fastcore
-fastprogress
+ipython

@@ -1,11 +1,8 @@
-import io, json, sys, re, csv, fileinput
+import io, json, sys, re, csv, traceback
 from types import SimpleNamespace
-from typing import Union
 from fastcore.foundation import L
 
 from datetime import datetime
-import nbformat
-from nbformat import NotebookNode
 from rich import box
 from rich.table import Table
 from rich.console import Console
@@ -65,6 +62,22 @@ def csv_to_md(csv_file_path, delimiter=";"):
     file.close()
 
 
+STATUS = SimpleNamespace(
+    ok="[green]Ok[/green]:heavy_check_mark:", fail="[red]Fail[/red]", skip="[green]Skipped[/green]:heavy_check_mark:"
+)
+
+
+def _format_row(fname: Path, status: str, time: str, xtra_col=None, fname_only: bool = True) -> tuple:
+    "Format one row for a rich.Table"
+
+    formatted_status = getattr(STATUS, status.lower())
+    fname = fname.name if fname_only else fname
+    row = (str(fname), formatted_status, f"{int(time)}s")
+    if len(listify(xtra_col)) > 0:
+        row += (str(xtra_col),)
+    return row
+
+
 class RichLogger:
     "A simple logger that logs to a file and the rich console"
 
@@ -83,13 +96,21 @@ class RichLogger:
         self.data.append(row)
         self.links.append(colab_link)
 
-    def to_csv(self, out_file, delimiter=";"):
+    def writerow_incolor(self, fname, status, time, colab_link):
+        "Same as write row, but color status"
+        row = _format_row(fname, status, time)
+        self.writerow(row, colab_link)
+
+    def to_csv(self, out_file, delimiter=";", format_link=True):
         self.csv_file = open(out_file, "w", newline="")
         self.csv_writer = csv.writer(self.csv_file, delimiter=delimiter)
         # write header
         self.csv_writer.writerow(self.columns)
         for row, link in zip(self.data, self.links):
-            fname = self._format_colab_link_md(link, row[0])
+            if format_link:
+                fname = self._format_colab_link_md(link, row[0])
+            else:
+                fname = row[0]
             self.csv_writer.writerow([fname] + [remove_rich_format(e) for e in row[1:]])
         self.csv_file.close()
 
@@ -105,10 +126,16 @@ class RichLogger:
         csv_file = Path(out_file).with_suffix(".csv")
         self.to_csv(csv_file)
         csv_to_md(csv_file)
-        self.log(f"The markdown file [red]{out_file}[/red] has been created!!!")
+        self.log(f"Output table saved to [red]{out_file}[/red]")
 
     def log(self, text):
         self.console.print(text)
+
+    def log_failed(self, failed_nbs: dict):
+        with open("traceback.txt", "a") as f:
+            for nb_name, e in failed_nbs.items():
+                f.write(str(e))
+                f.write(traceback.format_exc())
 
     @staticmethod
     def _format_colab_link(colab_link, fname):
@@ -146,7 +173,7 @@ def is_nb(fname: Path):
 
 def find_nbs(path: Path):
     "Get all nbs on path recursively"
-    path = Path(path)
+    path = Path(path).absolute()
     if is_nb(path):
         return [path]
     return L([nb for nb in path.rglob("*.ipynb") if is_nb(nb)]).sorted()
@@ -159,17 +186,6 @@ def print_output(notebook):  # pragma: no cover
     output_stream.write(x)
     output_stream.write("\n")
     output_stream.flush()
-
-
-def read_nb(fname: Union[Path, str]) -> NotebookNode:
-    "Read the notebook in `fname`."
-    with open(Path(fname), "r", encoding="utf8") as f:
-        return nbformat.reads(f.read(), as_version=4)
-
-
-def write_nb(notebook, fname: Union[Path, str]):
-    "Dump `notebook` to `fname`"
-    nbformat.write(notebook, str(fname), version=4)
 
 
 CellType = SimpleNamespace(code="code", md="markdown")
@@ -275,9 +291,9 @@ def git_origin_repo(fname):
 def git_local_repo(fname):
     "Get local github repo path"
     fname = Path(fname)
-    repo = git_origin_repo(fname)
-    for p in fname.parents:
-        if p.match(f"*/{repo}"):
+    repo_name = git_origin_repo(fname)
+    for p in fname.absolute().parents:
+        if p.match(f"*/{repo_name}"):
             break
     return p
 
