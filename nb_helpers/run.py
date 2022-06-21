@@ -1,8 +1,6 @@
-import time
+import time, os
 from pathlib import Path
-from types import SimpleNamespace
-from typing import Union, List
-from fastcore.basics import listify
+from typing import Union
 
 from fastcore.script import *
 from rich import print as pprint
@@ -74,7 +72,7 @@ def run_one(
 
 @call_parse
 def run_nbs(
-    path: Param("A path to nb files", str) = ".",
+    path: Param("A path to nb files", Path, nargs='?', opt=False) = os.getcwd(),
     verbose: Param("Print errors along the way", store_true) = False,
     lib_name: Param("Python lib names to filter, eg: tensorflow", str) = None,
     no_run: Param("Do not run any notebook", store_true) = False,
