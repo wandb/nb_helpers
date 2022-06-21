@@ -267,7 +267,11 @@ def git_current_branch(fname) -> str:
 
 def git_main_name(fname) -> str:
     "Get the name of master/main branch"
-    branches = run(f"git -C {Path(fname).parent} branch")
+    try:
+        branches = run(f"git -C {Path(fname).parent} branch")
+    except Exception:
+        print(f"Probably not in a git repo: {e}")
+        return "master"
     return "main" if "main" in branches else "master"
 
 
