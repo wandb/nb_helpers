@@ -1,7 +1,7 @@
 from fastcore.all import *
 from ghapi.all import *
-from nb_helpers.colab import get_colab_url
-from nb_helpers.utils import git_current_branch, git_local_repo, is_nb
+
+from nb_helpers.utils import git_local_repo, is_nb
 
 
 def create_comment():
