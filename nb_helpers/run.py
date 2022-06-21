@@ -25,23 +25,26 @@ def skip_nb(notebook, filters=None):
 
 
 def exec_nb(fname, do_print=False, pip_install=True):
-    "Execute tests in notebook in `fn` "
+    "Execute tests in notebook in `fn`"
     nb = read_nb(fname)
+
     def _no_eval(cell):
         if "pip" in cell.source and not pip_install:
             return True
-        if cell.cell_type != 'code': 
+        if cell.cell_type != "code":
             return True
         else:
             return False
-    
+
     start = time.time()
     k = CaptureShell(fname)
-    if do_print: print(f'Starting {fname}')
+    if do_print:
+        print(f"Starting {fname}")
     k.run_all(nb, exc_stop=True, preproc=_no_eval)
     res = True
-    if do_print: print(f'- Completed {fname}')
-    return res,time.time()-start
+    if do_print:
+        print(f"- Completed {fname}")
+    return res, time.time() - start
 
 
 def run_one(
@@ -70,9 +73,10 @@ def run_one(
         exception = e
     return (fname, "ok" if did_run else "fail", exec_time), exception
 
+
 @call_parse
 def run_nbs(
-    path: Param("A path to nb files", Path, nargs='?', opt=False) = os.getcwd(),
+    path: Param("A path to nb files", Path, nargs="?", opt=False) = os.getcwd(),
     verbose: Param("Print errors along the way", store_true) = False,
     lib_name: Param("Python lib names to filter, eg: tensorflow", str) = None,
     no_run: Param("Do not run any notebook", store_true) = False,

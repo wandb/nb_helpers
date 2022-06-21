@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from nbformat import read
+from execnb.nbio import read_nb
 from tests import TEST_PATH, TEST_NB, FAIL_NB
 from nb_helpers.utils import (
     detect_imported_libs,
@@ -8,7 +8,6 @@ from nb_helpers.utils import (
     is_nb,
     find_nbs,
     git_origin_repo,
-    read_nb,
     search_string_in_nb,
 )
 from nb_helpers.colab import has_colab_badge, add_colab_badge
@@ -27,8 +26,6 @@ def test_find_nbs():
     valid_nbs = [f.name for f in find_nbs(TEST_PATH)]
     assert len(valid_nbs) == 7
     assert ("test_nb.ipynb" in valid_nbs) and ("test_nb2.ipynb" in valid_nbs)
-
-
 
 
 # nb

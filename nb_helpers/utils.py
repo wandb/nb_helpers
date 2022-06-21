@@ -1,6 +1,5 @@
 import io, json, sys, re, csv, traceback
 from types import SimpleNamespace
-from typing import Union
 from fastcore.foundation import L
 
 from datetime import datetime
@@ -67,6 +66,7 @@ STATUS = SimpleNamespace(
     ok="[green]Ok[/green]:heavy_check_mark:", fail="[red]Fail[/red]", skip="[green]Skipped[/green]:heavy_check_mark:"
 )
 
+
 def _format_row(fname: Path, status: str, time: str, xtra_col=None, fname_only: bool = True) -> tuple:
     "Format one row for a rich.Table"
 
@@ -76,6 +76,7 @@ def _format_row(fname: Path, status: str, time: str, xtra_col=None, fname_only: 
     if len(listify(xtra_col)) > 0:
         row += (str(xtra_col),)
     return row
+
 
 class RichLogger:
     "A simple logger that logs to a file and the rich console"
@@ -130,8 +131,8 @@ class RichLogger:
     def log(self, text):
         self.console.print(text)
 
-    def log_failed(self, failed_nbs:dict):
-        with open('traceback.txt', 'a') as f:
+    def log_failed(self, failed_nbs: dict):
+        with open("traceback.txt", "a") as f:
             for nb_name, e in failed_nbs.items():
                 f.write(str(e))
                 f.write(traceback.format_exc())
