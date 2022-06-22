@@ -1,15 +1,19 @@
-import io, json, sys, re, csv, traceback
+import io, json, sys, re, csv, traceback, logging
 from types import SimpleNamespace
+from logging import Formatter
+from logging.handlers import RotatingFileHandler
 from fastcore.foundation import L
-
 from datetime import datetime
 from rich import box
 from rich.table import Table
 from rich.console import Console
+from rich.logging import RichHandler
 from fastcore.basics import ifnone, listify, store_attr
 from fastcore.xtras import run
 from pathlib import Path
 
+LOGFORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+LOGFORMAT_RICH = "%(message)s"
 
 # rich
 def create_table(columns=["Notebook Path", "Status", "Run Time", "Colab"], xtra_cols=None) -> Table:
@@ -85,12 +89,22 @@ class RichLogger:
         self.data = []
         self.links = []
         self.console = Console(width=width, record=True)
-        print(f"CONSOLE.is_terminal(): {self.console.is_terminal}")
+        rh = RichHandler(console=self.console)
+        rh.setFormatter(Formatter(LOGFORMAT_RICH))
 
         # beautiful rich table
         store_attr()
-
-        self.log(f"Writing output to {out_file}")
+        logging.basicConfig(
+            level=logging.ERROR,
+            format=LOGFORMAT,
+            handlers=[
+                rh,
+                RotatingFileHandler("errors.log", maxBytes=1024 * 1024 * 10, backupCount=10),  # 10Mb
+            ],
+        )
+        self.logger = logging.getLogger("rich")
+        self.info(f"CONSOLE.is_terminal(): {self.console.is_terminal}")
+        self.info(f"Writing output to {out_file}")
 
     def writerow(self, row, colab_link=None):
         self.data.append(row)
@@ -127,6 +141,22 @@ class RichLogger:
         self.to_csv(csv_file)
         csv_to_md(csv_file)
         self.log(f"Output table saved to [red]{out_file}[/red]")
+
+    @property
+    def info(self):
+        return self.logger.info
+
+    @property
+    def warning(self):
+        return self.logger.warning
+
+    @property
+    def exception(self):
+        return self.logger.exception
+
+    @property
+    def error(self):
+        return self.logger.error
 
     def log(self, text):
         self.console.print(text)
