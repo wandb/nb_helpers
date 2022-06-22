@@ -109,5 +109,4 @@ def run_nbs(
 
     logger.to_table()
     logger.to_md("run.md")
-    logger.log_failed(failed_nbs)
     return failed_nbs

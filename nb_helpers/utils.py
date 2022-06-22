@@ -140,7 +140,7 @@ class RichLogger:
         csv_file = Path(out_file).with_suffix(".csv")
         self.to_csv(csv_file)
         csv_to_md(csv_file)
-        self.log(f"Output table saved to [red]{out_file}[/red]")
+        self.info(f"Output table saved to [red]{out_file}[/red]")
 
     @property
     def info(self):
@@ -157,15 +157,6 @@ class RichLogger:
     @property
     def error(self):
         return self.logger.error
-
-    def log(self, text):
-        self.console.print(text)
-
-    def log_failed(self, failed_nbs: dict):
-        with open("traceback.txt", "a") as f:
-            for nb_name, e in failed_nbs.items():
-                f.write(str(e))
-                f.write(traceback.format_exc())
 
     @staticmethod
     def _format_colab_link(colab_link, fname):
@@ -192,7 +183,7 @@ class RichLogger:
                 table.close()
             if message is not None:
                 file.write(message)
-        self.log(f"Creating github issue via file: {github_issue_file}")
+        self.info(f"Creating github issue via file: {github_issue_file}")
 
 
 # nb
