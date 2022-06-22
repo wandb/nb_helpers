@@ -2,7 +2,7 @@ import time, os, logging
 from pathlib import Path
 from typing import Union
 
-from fastcore.script import *
+from fastcore.script import call_parse, Param, store_true
 from rich.progress import Progress
 
 from execnb.nbio import read_nb as read_nb

@@ -1,4 +1,4 @@
-import io, json, sys, re, csv, traceback, logging
+import io, json, sys, re, csv, logging
 from types import SimpleNamespace
 from logging import Formatter
 from logging.handlers import RotatingFileHandler
