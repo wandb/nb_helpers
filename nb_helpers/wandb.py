@@ -54,7 +54,7 @@ def summary_nbs(
     files = find_nbs(path)
     assert len(files) > 0, "There is no `ipynb` notebooks in the path you submited"
 
-    logger.log(f"Reading {len(files)} notebooks")
+    logger.info(f"Reading {len(files)} notebooks")
 
     repo_path = git_local_repo(files[0])
 

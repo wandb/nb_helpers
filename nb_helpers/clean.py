@@ -5,7 +5,7 @@ from rich import print
 from rich.console import Console
 from rich.table import Table
 from rich.progress import track
-from fastcore.script import *
+from fastcore.script import call_parse, Param, store_true
 
 from nb_helpers.utils import print_output, is_nb, find_nbs
 
