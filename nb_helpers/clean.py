@@ -1,4 +1,4 @@
-import io, json, sys
+import io, json, os
 from pathlib import Path
 
 from rich import print
@@ -107,7 +107,7 @@ def clean_all(path: Path, clear_outs=True, disp=False):
 
 @call_parse
 def clean_nbs(
-    path: Param("The path to notebooks", str) = ".",
+    path: Param("A path to nb files", Path, nargs="?", opt=False) = os.getcwd(),
     clear_outs: Param("Remove cell outputs", store_true) = False,
     verbose: Param("Rnun on verbose mdoe", store_true) = False,
 ):

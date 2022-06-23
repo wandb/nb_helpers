@@ -27,7 +27,10 @@ def create_comment():
 
     def _get_colab_url2md(fname: Path, github_repo=github_repo, branch=branch) -> str:
         "Create colab links in md"
-        fname = fname.relative_to(git_local_repo(fname))
+        print(f"Getting colab for fname: {fname}")
+        local_repo_name = git_local_repo(fname)
+        print(f"Local git repo: {local_repo_name}")
+        fname = fname.relative_to(local_repo_name)
         colab_url = f"https://colab.research.google.com/github/{github_repo}/blob/{branch}/{str(fname)}"
         return f"- [{fname}]({colab_url})\n"
 

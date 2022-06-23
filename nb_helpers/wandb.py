@@ -1,4 +1,4 @@
-import re
+import re, os
 from pathlib import Path
 from fastcore.script import Param, call_parse, store_true
 from fastcore.basics import listify
@@ -13,7 +13,7 @@ from nb_helpers.utils import (
     RichLogger,
     git_local_repo,
 )
-from nb_helpers.clean import clean_one
+from nb_helpers.clean import clean_nb, clean_one
 from nb_helpers.colab import add_colab_badge, add_colab_metadata, get_colab_url, has_colab_badge
 
 
@@ -41,7 +41,7 @@ def search_code(nb, features=WANDB_FEATURES):
 
 @call_parse
 def summary_nbs(
-    path: Param("A path to nb files", str) = ".",
+    path: Param("A path to nb files", Path, nargs="?", opt=False) = os.getcwd(),
     wandb_features: Param("wandb features to identify, comma separated", str) = WANDB_FEATURES,
     out_file: Param("Export to csv file", Path) = "summary_table.csv",
     github_issue: Param("Creates a `github_issue.md` file ready to be put online", store_true) = True,
@@ -84,7 +84,7 @@ def summary_nbs(
 
 @call_parse
 def fix_nbs(
-    path: Param("A path to nb files", str) = ".",
+    path: Param("A path to nb files", Path, nargs="?", opt=False) = os.getcwd(),
     colab_cell_idx: Param("Cell idx where the colab badge must go", int) = 0,
     branch: Param("The branch", str) = None,
 ):
@@ -102,12 +102,13 @@ def fix_nbs(
             tracker = f"<!--- @wandbcode{{{tracker}}} -->"
         nb = add_colab_badge(nb, nb_path, branch=branch, idx=colab_cell_idx, tracker=tracker)
         add_colab_metadata(nb)
+        clean_nb(nb)
         write_nb(nb, nb_path)
 
 
 @call_parse
 def filter_nbs(
-    path: Param("A path to nb files", str) = ".",
+    path: Param("A path to nb files", Path, nargs="?", opt=False) = os.getcwd(),
     lib_name: Param("Python lib names to filter, eg: tensorflow", str) = "",
     out_file: Param("Export to csv file", Path) = "filtered_nbs.csv",
 ):
