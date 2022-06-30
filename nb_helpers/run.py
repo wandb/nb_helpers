@@ -91,6 +91,7 @@ def run_nbs(
     with Progress(console=logger.console) as progress:
         task_run_nbs = progress.add_task("Running nbs...", total=len(files))
         for nb_path in files:
+            progress.update(task_run_nbs, description=f"Running nb: {str(fname.relative_to(fname.parent.parent))}")
             (fname, run_status, runtime), e = run_one(
                 nb_path,
                 lib_name=lib_name,
@@ -98,7 +99,6 @@ def run_nbs(
                 pip_install=pip_install,
             )
             progress.advance(task_run_nbs)
-            progress.update(task_run_nbs, description=f"Running nb: {str(fname.relative_to(fname.parent.parent))}")
             logger.info(
                 f"Executing: {str(fname.relative_to(fname.parent.parent)):50} | {run_status:15} | {int(runtime):5} "
             )

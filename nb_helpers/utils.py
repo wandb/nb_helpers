@@ -115,7 +115,7 @@ class RichLogger:
         row = _format_row(fname, status, time)
         self.writerow(row, colab_link)
 
-    def to_csv(self, out_file, delimiter=";", format_link=True):
+    def to_csv(self, out_file, delimiter=";", format_link=False):
         self.csv_file = open(out_file, "w", newline="")
         self.csv_writer = csv.writer(self.csv_file, delimiter=delimiter)
         # write header
