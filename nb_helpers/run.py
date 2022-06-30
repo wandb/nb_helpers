@@ -91,7 +91,7 @@ def run_nbs(
     with Progress(console=logger.console) as progress:
         task_run_nbs = progress.add_task("Running nbs...", total=len(files))
         for nb_path in files:
-            progress.update(task_run_nbs, description=f"Running nb: {str(fname.relative_to(fname.parent.parent))}")
+            progress.update(task_run_nbs, description=f"Running nb: {str(nb_path.relative_to(nb_path.parent.parent))}")
             (fname, run_status, runtime), e = run_one(
                 nb_path,
                 lib_name=lib_name,
