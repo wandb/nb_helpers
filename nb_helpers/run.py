@@ -55,7 +55,7 @@ def run_one(
     pip_install=False,
 ):
     "Run nb `fname` and timeit, recover exception"
-    did_run, skip, exception, exec_time = False, False, None, 0
+    did_run, skip, exception, exec_time = False, False, None, time.time()
     try:
         # read notebook as dict
         notebook = read_nb(fname)
@@ -64,11 +64,12 @@ def run_one(
         skip = skip_nb(notebook, lib_name)
 
         if skip or no_run:
-            return (fname, "skip", exec_time), None
+            return (fname, "skip", 0), None
         else:
             did_run, exec_time = exec_nb(fname, pip_install=pip_install)
     except Exception as e:
         logger.error(f"Error in {fname}:{e}")
+        exec_time = time.time() - exec_time
         exception = e
     return (fname, "ok" if did_run else "fail", exec_time), exception
 
