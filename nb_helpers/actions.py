@@ -36,6 +36,7 @@ def after_pr_colab_link(owner="wandb", repo="nb_helpers", token=None):
 
     # filter nbs
     nb_files = [f for f in pr_files if is_nb(f)]
+    print(f'Notebooks changed: {nb_files}')
 
     if len(nb_files) > 0:
         body = create_comment_body(nb_files)
