@@ -49,7 +49,7 @@ def exec_nb(fname, pip_install=True):
 
 
 @patch
-def prettytb(self: CaptureShell, fname: str | Path = None, simple=False):  # filename to print alongside the traceback
+def prettytb(self: CaptureShell, fname:Union[Path, str]=None, simple=False):  # filename to print alongside the traceback
     "Show a pretty traceback for notebooks, optionally printing `fname`."
     fname = fname if fname else self._fname
     _fence = "=" * 75

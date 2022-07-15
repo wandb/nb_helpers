@@ -68,4 +68,4 @@ def create_issue_nb_fail(fname, traceback=None, owner="wandb", repo="nb_helpers"
     title = f"Failed to run {fname}"
     colab_url = get_colab_url2md(fname, "master", github_repo)
     body = "The following notebooks failed to run:\n-" + colab_url + "\n" + "```\n" + ifnone(traceback, "") + "\n```"
-    api.issues.create(title=title, body=body)
+    api.issues.create(title=title, body=body, labels=["bug"])
