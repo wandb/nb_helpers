@@ -97,7 +97,7 @@ class RichLogger:
             format=LOGFORMAT,
             handlers=[
                 rh,
-                RotatingFileHandler("errors.log", maxBytes=1024 * 1024 * 10, backupCount=10),  # 10Mb
+                RotatingFileHandler("log.txt", maxBytes=1024 * 1024 * 10, backupCount=10),  # 10Mb
             ],
         )
         self.logger = logging.getLogger("rich")

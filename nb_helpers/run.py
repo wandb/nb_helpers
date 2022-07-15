@@ -1,12 +1,14 @@
-import time, os, logging
+import time, os, logging, re
 from pathlib import Path
 from typing import Union
 
+from fastcore.basics import patch
 from fastcore.script import call_parse, Param, store_true
 from rich.progress import Progress
 
-from execnb.nbio import read_nb as read_nb
-from execnb.shell import CaptureShell
+from execnb.nbio import read_nb
+from execnb.shell import *
+from nb_helpers.actions import create_issue_nb_fail
 
 from nb_helpers.utils import find_nbs, git_main_name, search_string_in_nb, RichLogger
 from nb_helpers.colab import get_colab_url
@@ -14,7 +16,7 @@ from nb_helpers.colab import get_colab_url
 
 logger = RichLogger(columns=["fname", "status", "t[s]"])
 
-__all__ = ["run_one", "run_nbs"]
+__all__ = ["exec_nb", "run_one", "run_nbs"]
 
 
 def skip_nb(notebook, filters=None):
@@ -38,14 +40,28 @@ def exec_nb(fname, pip_install=True):
         else:
             return False
 
-    start = time.time()
-    k = CaptureShell(fname)
+    shell = CaptureShell(fname)
     try:
-        k.run_all(nb, exc_stop=True, preproc=preproc)
+        shell.run_all(nb, exc_stop=True, preproc=preproc)
     except Exception as e:
-        print(k.prettytb(fname))
-        raise e
-    return True, time.time() - start
+        return False, shell
+    return True, shell
+
+@patch
+def prettytb(self:CaptureShell, 
+             fname:str|Path=None,
+             simple=False): # filename to print alongside the traceback
+    "Show a pretty traceback for notebooks, optionally printing `fname`."
+    fname = fname if fname else self._fname
+    _fence = '='*75
+    cell_intro_str = f"While Executing Cell #{self._cell_idx}:" if self._cell_idx else "While Executing:"
+    cell_str = f"\n{cell_intro_str}\n{self.exc[-1]}"
+    fname_str = f' in {fname}' if fname else ''
+    res = f"{type(self.exc[1]).__name__}{fname_str}:\n{_fence}\n{cell_str}\n"
+    if simple: 
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        res = ansi_escape.sub('', res)
+    return res
 
 
 def run_one(
@@ -53,25 +69,29 @@ def run_one(
     lib_name: str = None,
     no_run: bool = False,
     pip_install=False,
+    github_issue=False,
+    repo="nb_helpers", 
+    owner="wandb",  
 ):
     "Run nb `fname` and timeit, recover exception"
-    did_run, skip, exception, exec_time = False, False, None, time.time()
-    try:
-        # read notebook as dict
-        notebook = read_nb(fname)
+    did_run, skip, exec_time = False, False, time.time()
 
-        # check if notebooks has to be runned
-        skip = skip_nb(notebook, lib_name)
+    # read notebook as dict
+    notebook = read_nb(fname)
 
-        if skip or no_run:
-            return (fname, "skip", 0), None
-        else:
-            did_run, exec_time = exec_nb(fname, pip_install=pip_install)
-    except Exception as e:
-        logger.error(f"Error in {fname}:{e}")
-        exec_time = time.time() - exec_time
-        exception = e
-    return (fname, "ok" if did_run else "fail", exec_time), exception
+    # check if notebooks has to be runned
+    skip = skip_nb(notebook, lib_name)
+
+    if skip or no_run:
+        return (fname, "skip", 0), None
+    else:
+        did_run, shell = exec_nb(fname, pip_install=pip_install)
+    if shell.exc:
+        print(shell.prettytb(fname))
+        logger.error(f"Error in {fname}:{shell.exc[1]}")
+        if github_issue:
+            create_issue_nb_fail(fname, shell.prettytb(fname, simple=True), repo=repo, owner=owner)
+    return (fname, "ok" if did_run else "fail", time.time() - exec_time)
 
 
 @call_parse
@@ -80,7 +100,10 @@ def run_nbs(
     verbose: Param("Print errors along the way", store_true) = False,
     lib_name: Param("Python lib names to filter, eg: tensorflow", str) = None,
     no_run: Param("Do not run any notebook", store_true) = False,
-    pip_install: Param("Do not install anything with pip", store_true) = False,
+    pip_install: Param("Run cells with !pip install", store_true) = False,
+    github_issue: Param("Create a github issue if notebook fails", store_true) = False,
+    repo: Param("Github repo to create issue in", str) = "nb_helpers",
+    owner: Param("Github owner to create issue in", str) = "wandb",
 ):
     if verbose:
         logger.logger.setLevel(logging.DEBUG)
@@ -88,26 +111,23 @@ def run_nbs(
     files = find_nbs(path)
     branch = git_main_name(files[0])
 
-    failed_nbs = {}
     with Progress(console=logger.console) as progress:
         task_run_nbs = progress.add_task("Running nbs...", total=len(files))
         for nb_path in files:
             progress.update(task_run_nbs, description=f"Running nb: {str(nb_path.relative_to(nb_path.parent.parent))}")
-            (fname, run_status, runtime), e = run_one(
+            (fname, run_status, runtime) = run_one(
                 nb_path,
                 lib_name=lib_name,
                 no_run=no_run,
                 pip_install=pip_install,
+                github_issue=github_issue,
+                repo=repo,
+                owner=owner,
             )
             progress.advance(task_run_nbs)
-            logger.info(
-                f"Executing: {str(fname.relative_to(fname.parent.parent)):50} | {run_status:15} | {int(runtime):5} "
-            )
             logger.writerow_incolor(fname, run_status, runtime, colab_link=get_colab_url(nb_path, branch))
             time.sleep(0.1)
-            if e is not None:
-                failed_nbs[str(nb_path)] = e
 
     logger.to_table()
     logger.to_md("run.md")
-    return failed_nbs
+    return
