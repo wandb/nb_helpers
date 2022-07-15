@@ -57,13 +57,12 @@ def after_pr_colab_link(owner="wandb", repo="nb_helpers", token=None):
             print(f">> Creating comment on PR #{issue}\n{body}\n")
             api.issues.create_comment(issue_number=issue, body=body)
 
-
 def create_issue_nb_fail(fname, traceback=None, owner="wandb", repo="nb_helpers", token=None):
     "Creates issue of failing nb"
 
     api = GhApi(owner=owner, repo=repo, token=ifnone(token, github_token()))
-    fname = fname.resolve()
-    github_repo = git_origin_repo(fname)
+    fname = fname.resolve().absolute()
+    github_repo = git_origin_repo(fname).split("/")[1]
     fname = str(fname).split(github_repo)[1]
     title = f"Failed to run {fname}"
     colab_url = get_colab_url2md(fname, "master", github_repo)
