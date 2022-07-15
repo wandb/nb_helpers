@@ -24,6 +24,7 @@ def skip_nb(notebook, filters=None):
         skip = True
     return skip
 
+
 def exec_nb(fname, do_print=False, pip_install=True, verbose=False):
     "Execute tests in notebook in `fn`"
     nb = read_nb(fname)
