@@ -1,7 +1,7 @@
 from fastcore.all import *
 from ghapi.all import *
 
-from nb_helpers.utils import is_nb
+from nb_helpers.utils import is_nb, git_origin_repo
 
 
 def get_colab_url2md(fname: Path, branch="main", github_repo="nb_helpers") -> str:
@@ -62,10 +62,10 @@ def create_issue_nb_fail(fname, traceback=None, owner="wandb", repo="nb_helpers"
     "Creates issue of failing nb"
 
     api = GhApi(owner=owner, repo=repo, token=ifnone(token, github_token()))
-
-    fname = str(fname.absolute()).split(f"{owner}/")[1]
+    fname = fname.resolve()
+    github_repo = git_origin_repo(fname)
+    fname = str(fname).split(github_repo)[1]
     title = f"Failed to run {fname}"
-    github_repo = fname.split("/")[0]
     colab_url = get_colab_url2md(fname, "master", github_repo)
     body = "The following notebooks failed to run:\n-" + colab_url + "\n" + "```\n" + ifnone(traceback, "") + "\n```"
     api.issues.create(title=title, body=body, labels=["bug"])
