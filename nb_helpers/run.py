@@ -24,8 +24,7 @@ def skip_nb(notebook, filters=None):
         skip = True
     return skip
 
-
-def exec_nb(fname, do_print=False, pip_install=True):
+def exec_nb(fname, do_print=False, pip_install=True, verbose=False):
     "Execute tests in notebook in `fn`"
     nb = read_nb(fname)
 
@@ -41,7 +40,7 @@ def exec_nb(fname, do_print=False, pip_install=True):
     k = CaptureShell(fname)
     if do_print:
         logger.info(f"Starting {fname}")
-    k.run_all(nb, exc_stop=True, preproc=_no_eval)
+    k.run_all(nb, exc_stop=True, preproc=_no_eval, postproc=lambda cell: logger.info(cell.source))
     res = True
     if do_print:
         logger.info(f"- Completed {fname}")
