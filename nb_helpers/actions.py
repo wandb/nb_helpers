@@ -25,20 +25,30 @@ def after_pr_colab_link(owner="wandb", repo="nb_helpers", token=None):
     if "workflow" in payload:
         issue = 1
     else:
-        if payload.action != "opened":
-            return
         issue = payload.number
-
-    pr = api.pulls.get(issue)
-    github_repo, branch = pr.head.repo.full_name, pr.head.ref
-
+    pr = payload.pull_request
+    github_repo = pr.head.repo.full_name
+    branch = pr.head.ref
     pr_files = [Path(f.filename) for f in api.pulls.list_files(issue)]
 
     # filter nbs
     nb_files = [f for f in pr_files if is_nb(f)]
-    print(f'Notebooks changed: {nb_files}')
+
+    def _get_comment_id(issue):
+        comments = api.issues.list_comments(issue)
+        candidates =  [c for c in comments if "The following colabs where changed in this PR" in c.body]
+        if len(candidates)==1:
+            comment_id = candidates[0].id
+        else:
+            comment_id = -1
+        return comment_id
 
     if len(nb_files) > 0:
         body = create_comment_body(nb_files)
-        print(f">> Creating comment on PR #{issue}")
-        api.issues.create_comment(issue_number=issue, body=body)
+        comment_id = _get_comment_id(issue)
+        if comment_id>0:
+            print(f">> Updating comment on PR #{issue}\n{body}\n")
+            api.issues.update_comment(comment_id, body)
+        else:
+            print(f">> Creating comment on PR #{issue}\n{body}\n")
+            api.issues.create_comment(issue_number=issue, body=body)
