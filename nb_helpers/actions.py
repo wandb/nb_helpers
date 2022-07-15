@@ -63,7 +63,7 @@ def create_issue_nb_fail(fname, traceback=None, owner="wandb", repo="nb_helpers"
 
     api = GhApi(owner=owner, repo=repo, token=ifnone(token, github_token()))
 
-    fname = str(fname).split(f"{owner}/")[1]
+    fname = str(fname.absolute()).split(f"{owner}/")[1]
     title = f"Failed to run {fname}"
     github_repo = fname.split("/")[0]
     colab_url = get_colab_url2md(fname, "master", github_repo)
