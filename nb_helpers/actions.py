@@ -30,6 +30,7 @@ def after_pr_colab_link(owner="wandb", repo="nb_helpers", token=None):
     github_repo = pr.head.repo.full_name
     branch = pr.head.ref
     pr_files = [Path(f.filename) for f in api.pulls.list_files(issue)]
+    print(f'pr_files: {pr_files}')
 
     # filter nbs
     nb_files = [f for f in pr_files if is_nb(f)]
