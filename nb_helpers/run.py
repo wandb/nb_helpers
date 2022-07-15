@@ -47,20 +47,19 @@ def exec_nb(fname, pip_install=True):
         return False, shell
     return True, shell
 
+
 @patch
-def prettytb(self:CaptureShell, 
-             fname:str|Path=None,
-             simple=False): # filename to print alongside the traceback
+def prettytb(self: CaptureShell, fname: str | Path = None, simple=False):  # filename to print alongside the traceback
     "Show a pretty traceback for notebooks, optionally printing `fname`."
     fname = fname if fname else self._fname
-    _fence = '='*75
+    _fence = "=" * 75
     cell_intro_str = f"While Executing Cell #{self._cell_idx}:" if self._cell_idx else "While Executing:"
     cell_str = f"\n{cell_intro_str}\n{self.exc[-1]}"
-    fname_str = f' in {fname}' if fname else ''
+    fname_str = f" in {fname}" if fname else ""
     res = f"{type(self.exc[1]).__name__}{fname_str}:\n{_fence}\n{cell_str}\n"
-    if simple: 
-        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
-        res = ansi_escape.sub('', res)
+    if simple:
+        ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+        res = ansi_escape.sub("", res)
     return res
 
 
@@ -70,8 +69,8 @@ def run_one(
     no_run: bool = False,
     pip_install=False,
     github_issue=False,
-    repo="nb_helpers", 
-    owner="wandb",  
+    repo="nb_helpers",
+    owner="wandb",
 ):
     "Run nb `fname` and timeit, recover exception"
     did_run, skip, exec_time = False, False, time.time()

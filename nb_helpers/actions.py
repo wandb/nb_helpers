@@ -57,6 +57,7 @@ def after_pr_colab_link(owner="wandb", repo="nb_helpers", token=None):
             print(f">> Creating comment on PR #{issue}\n{body}\n")
             api.issues.create_comment(issue_number=issue, body=body)
 
+
 def create_issue_nb_fail(fname, traceback=None, owner="wandb", repo="nb_helpers", token=None):
     "Creates issue of failing nb"
 
@@ -66,5 +67,5 @@ def create_issue_nb_fail(fname, traceback=None, owner="wandb", repo="nb_helpers"
 
     title = f"Failed to run {fname}"
     colab_url = get_colab_url2md(fname, "master", github_repo)
-    body = "The following notebooks failed to run:\n-" + colab_url + '\n' + "```\n"+ifnone(traceback, "") + "\n```"
-    api.issues.create(title=title,  body=body)
+    body = "The following notebooks failed to run:\n-" + colab_url + "\n" + "```\n" + ifnone(traceback, "") + "\n```"
+    api.issues.create(title=title, body=body)
