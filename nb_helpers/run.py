@@ -25,11 +25,12 @@ def skip_nb(notebook, filters=None):
     return skip
 
 
-def exec_nb(fname, do_print=False, pip_install=True, verbose=False):
+def exec_nb(fname, pip_install=True):
     "Execute tests in notebook in `fn`"
     nb = read_nb(fname)
 
-    def _no_eval(cell):
+    def preproc(cell):
+        logger.info(cell.source)
         if ("!pip install" in cell.source and not pip_install) and cell.cell_type == "code":
             return True
         if cell.cell_type != "code":
@@ -39,13 +40,12 @@ def exec_nb(fname, do_print=False, pip_install=True, verbose=False):
 
     start = time.time()
     k = CaptureShell(fname)
-    if do_print:
-        logger.info(f"Starting {fname}")
-    k.run_all(nb, exc_stop=True, preproc=_no_eval, postproc=lambda cell: logger.info(cell.source))
-    res = True
-    if do_print:
-        logger.info(f"- Completed {fname}")
-    return res, time.time() - start
+    try:
+        k.run_all(nb, exc_stop=True, preproc=preproc)
+    except Exception as e:
+        print(k.prettytb(fname))
+        raise e
+    return True, time.time() - start
 
 
 def run_one(
