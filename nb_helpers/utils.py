@@ -86,14 +86,12 @@ class RichLogger:
     "A simple logger that logs to a file and the rich console"
 
     def __init__(self, columns, out_file="summary_table.csv", width=180):
+        store_attr()
         self.data = []
         self.links = []
         self.console = Console(width=width, record=True)
         rh = RichHandler(console=self.console)
         rh.setFormatter(Formatter(LOGFORMAT_RICH))
-
-        # beautiful rich table
-        store_attr()
         logging.basicConfig(
             level=logging.ERROR,
             format=LOGFORMAT,
