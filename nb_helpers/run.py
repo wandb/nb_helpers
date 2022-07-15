@@ -30,7 +30,7 @@ def exec_nb(fname, do_print=False, pip_install=True, verbose=False):
     nb = read_nb(fname)
 
     def _no_eval(cell):
-        if "pip" in cell.source and not pip_install:
+        if ("!pip install" in cell.source and not pip_install) and cell.cell_type == "code":
             return True
         if cell.cell_type != "code":
             return True
