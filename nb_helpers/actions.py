@@ -2,17 +2,16 @@ from fastcore.all import *
 from ghapi.all import *
 
 from nb_helpers.utils import is_nb
-from nb_helpers.colab import get_colab_url
 
-def get_colab_url2md(fname: Path, branch="main") -> str:
+def get_colab_url2md(fname: Path, branch="main", github_repo="nb_helpers") -> str:
     "Create colab links in md"
-    colab_url = get_colab_url(fname, branch)
+    colab_url = f"https://colab.research.google.com/github/{github_repo}/blob/{branch}/{str(fname)}"
     return f"[{colab_url.split(branch)[1]}]({colab_url})"
 
-def create_comment_body(nb_files) -> str:
+def create_comment_body(nb_files, branch, github_repo) -> str:
     "Creates a MD list of fnames with links to colab"
     title = "The following colabs where changed:"
-    colab_links = tuple(get_colab_url2md(f) for f in nb_files)
+    colab_links = tuple(get_colab_url2md(f, branch, github_repo) for f in nb_files)
     body = tuplify(title) + colab_links
     return "\n -".join(body)
 
@@ -45,7 +44,7 @@ def after_pr_colab_link(owner="wandb", repo="nb_helpers", token=None):
         return comment_id
 
     if len(nb_files) > 0:
-        body = create_comment_body(nb_files)
+        body = create_comment_body(nb_files, branch, github_repo)
         comment_id = _get_comment_id(issue)
         if comment_id>0:
             print(f">> Updating comment on PR #{issue}\n{body}\n")
