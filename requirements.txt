@@ -2,3 +2,4 @@ rich
 execnb
 fastcore
 ipython
+ghapi
