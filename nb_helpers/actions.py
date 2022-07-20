@@ -62,8 +62,11 @@ def create_issue_nb_fail(fname, traceback=None, owner="wandb", repo="nb_helpers"
 
     api = GhApi(owner=owner, repo=repo, token=ifnone(token, github_token()))
     fname = fname.resolve().absolute()
-    github_repo = git_origin_repo(fname).split("/")[1]
+    print(fname)
+    github_repo = git_origin_repo(fname)
+    print(github_repo)
     fname = str(fname).split(github_repo)[1]
+    print(fname)
     title = f"Failed to run {fname}"
     colab_url = get_colab_url2md(fname, "master", github_repo)
     body = "The following notebooks failed to run:\n-" + colab_url + "\n" + "```\n" + ifnone(traceback, "") + "\n```"
