@@ -67,6 +67,7 @@ def create_issue_nb_fail(fname, traceback=None, owner="wandb", repo="nb_helpers"
     fname = fname.resolve()
     github_repo = git_origin_repo(fname)
     fname = str(fname).split(github_repo)[1]
+    print(fname)
     title = f"Failed to run {fname}"
     branch = git_main_name(fname)
     repo_url = f"[{str(fname)}](https://github.com/{github_repo}/blob/{branch}{str(fname)})"
