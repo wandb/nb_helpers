@@ -1,4 +1,5 @@
 import io, json, sys, re, csv, logging
+import git
 from types import SimpleNamespace
 from logging import Formatter
 from logging.handlers import RotatingFileHandler
@@ -192,10 +193,10 @@ def is_nb(fname: Path):
 
 def find_nbs(path: Path):
     "Get all nbs on path recursively"
-    path = Path(path).absolute()
+    path = Path(path).resolve()
     if is_nb(path):
-        return [path]
-    return L([nb for nb in path.rglob("*.ipynb") if is_nb(nb)]).sorted()
+        return [path.resolve()]
+    return L([nb.resolve() for nb in path.rglob("*.ipynb") if is_nb(nb)]).sorted()
 
 
 def print_output(notebook):  # pragma: no cover
@@ -276,18 +277,15 @@ def detect_imported_libs(notebook):
 ## Git
 def git_current_branch(fname) -> str:
     "Get current git branch"
-    print("_____________________")
-    print(fname, type(fname))
-    log = run("git log")
-    print(log)
-    print("_____________________")
-    return run(f"git -C {Path(fname).parent} symbolic-ref --short HEAD")
+    repo = git.Repo(fname, search_parent_directories=True)
+    return repo.active_branch.name
 
 
 def git_main_name(fname) -> str:
     "Get the name of master/main branch"
     try:
-        branches = run(f"git -C {Path(fname).parent} branch")
+        repo = git.Repo(fname, search_parent_directories=True)
+        branches = [b.name for b in repo.branches]
     except Exception as e:
         print(f"Probably not in a git repo: {e}")
         return "master"
@@ -297,7 +295,8 @@ def git_main_name(fname) -> str:
 def git_origin_repo(fname):
     "Get github repo name from `fname`"
     try:
-        repo_url = run(f"git -C {Path(fname).parent} config --get remote.origin.url")
+        repo = git.Repo(fname, search_parent_directories=True)
+        repo_url = repo.remote().url
 
         # check if ssh or html
         if "git@" in repo_url:
@@ -313,18 +312,14 @@ def git_origin_repo(fname):
 
 def git_local_repo(fname):
     "Get local github repo path"
-    fname = Path(fname)
-    repo_name = git_origin_repo(fname)
-    for p in fname.absolute().parents:
-        if p.match(f"*/{repo_name}"):
-            break
-    return p
+    repo = git.Repo(fname, search_parent_directories=True)
+    return Path(repo.git_dir).parent.resolve()
 
 
-def git_last_commit(fname, branch="master"):
+def git_last_commit(fname):
     "Gets the last commit on fname"
-    commit_id = run(f"git rev-list -1 {branch} {fname}")
-    return commit_id
+    repo = git.Repo(fname, search_parent_directories=True)
+    return repo.commit().hexsha
 
 
 # other stuff
