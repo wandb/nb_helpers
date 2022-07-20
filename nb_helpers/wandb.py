@@ -72,7 +72,7 @@ def summary_nbs(
             ", ".join(libs),
             str(colab_cell_idx) if colab_cell_idx != -1 else "",
         ]
-        colab_link = get_colab_url(nb_path, branch=git_main_name(nb_path))
+        colab_link = get_colab_url(nb_path)
         logger.writerow(row, colab_link)
     logger.to_table()
     logger.to_csv(Path(out_file).with_suffix(".csv"))

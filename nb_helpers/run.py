@@ -126,7 +126,7 @@ def run_nbs(
                 owner=owner,
             )
             progress.advance(task_run_nbs)
-            logger.writerow_incolor(fname, run_status, runtime, colab_link=get_colab_url(nb_path, branch))
+            logger.writerow_incolor(fname, run_status, runtime, colab_link=get_colab_url(nb_path))
             time.sleep(0.1)
 
     logger.to_table()

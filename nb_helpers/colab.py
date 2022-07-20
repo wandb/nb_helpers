@@ -44,7 +44,7 @@ def create_colab_badge_cell(fname, branch=None, meta={}, tracker=None):
     "Create a colab badge cell from `fname`"
     # get main/master name
     branch = ifnone(branch, git_main_name(fname))
-    url = get_colab_url(fname, branch)
+    url = get_colab_url(fname)
     colab_cell = _create_colab_cell(url, meta, tracker)
     return colab_cell
 
