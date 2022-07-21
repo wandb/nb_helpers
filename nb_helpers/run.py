@@ -84,7 +84,7 @@ def run_one(
     skip = skip_nb(notebook, lib_name)
 
     if skip or no_run:
-        return (fname, "skip", 0), None
+        return "skip", 0
     else:
         did_run, shell = exec_nb(fname, pip_install=pip_install)
     if shell.exc:
@@ -92,7 +92,7 @@ def run_one(
         logger.error(f"Error in {fname}:{shell.exc[1]}")
         if github_issue:
             create_issue_nb_fail(fname, shell.prettytb(fname, simple=True), repo=repo, owner=owner)
-    return (fname, "ok" if did_run else "fail", time.time() - exec_time)
+    return "ok" if did_run else "fail", time.time() - exec_time
 
 
 @call_parse
@@ -114,10 +114,10 @@ def run_nbs(
 
     with Progress(console=logger.console) as progress:
         task_run_nbs = progress.add_task("Running nbs...", total=len(files))
-        for nb_path in files:
-            progress.update(task_run_nbs, description=f"Running nb: {str(nb_path.relative_to(nb_path.parent.parent))}")
-            (fname, run_status, runtime) = run_one(
-                nb_path,
+        for fname in files:
+            progress.update(task_run_nbs, description=f"Running nb: {str(fname.relative_to(fname.parent.parent))}")
+            (run_status, runtime) = run_one(
+                fname,
                 lib_name=lib_name,
                 no_run=no_run,
                 pip_install=pip_install,
@@ -126,7 +126,7 @@ def run_nbs(
                 owner=owner,
             )
             progress.advance(task_run_nbs)
-            logger.writerow_incolor(fname, run_status, runtime, colab_link=get_colab_url(nb_path))
+            logger.writerow_incolor(fname, run_status, runtime, colab_link=get_colab_url(fname, branch))
             time.sleep(0.1)
 
     logger.to_table()

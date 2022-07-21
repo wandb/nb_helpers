@@ -7,10 +7,9 @@ from execnb.nbio import NbCell
 from nb_helpers.utils import git_main_name, git_origin_repo, git_local_repo, search_cell, git_current_branch
 
 
-def get_colab_url(fname):
+def get_colab_url(fname, branch):
     "Get git repo url, to append to colab"
     fname = Path(fname).resolve()
-    branch = git_current_branch(fname)
     github_repo = git_origin_repo(fname)
     fname = fname.relative_to(git_local_repo(fname))
 
@@ -44,7 +43,7 @@ def create_colab_badge_cell(fname, branch=None, meta={}, tracker=None):
     "Create a colab badge cell from `fname`"
     # get main/master name
     branch = ifnone(branch, git_main_name(fname))
-    url = get_colab_url(fname)
+    url = get_colab_url(fname, branch)
     colab_cell = _create_colab_cell(url, meta, tracker)
     return colab_cell
 
