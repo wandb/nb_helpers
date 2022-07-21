@@ -134,5 +134,5 @@ github_repo = git_origin_repo(one_nb_path)
 master_name = git_main_name(one_nb_path)
 
 # get colab link
-colab_url = get_colab_url(one_nb_path, branch=master_name) 
+colab_url = get_colab_url(one_nb_path, branch) 
 ```

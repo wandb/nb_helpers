@@ -4,14 +4,15 @@ from fastcore.basics import ifnone
 
 from execnb.nbio import NbCell
 
-from nb_helpers.utils import git_main_name, git_origin_repo, git_local_repo, search_cell
+from nb_helpers.utils import git_main_name, git_origin_repo, git_local_repo, search_cell, git_current_branch
 
 
-def get_colab_url(fname, branch="main"):
+def get_colab_url(fname, branch):
     "Get git repo url, to append to colab"
-    fname = Path(fname)
+    fname = Path(fname).resolve()
     github_repo = git_origin_repo(fname)
     fname = fname.relative_to(git_local_repo(fname))
+
     return f"https://colab.research.google.com/github/{github_repo}/blob/{branch}/{str(fname)}"
 
 

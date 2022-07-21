@@ -3,3 +3,4 @@ execnb
 fastcore
 ipython
 ghapi
+GitPython
