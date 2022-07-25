@@ -1,7 +1,7 @@
 from fastcore.all import *
 from ghapi.all import *
 
-from nb_helpers.utils import git_main_name, is_nb, git_origin_repo
+from nb_helpers.utils import git_main_name, is_nb, git_origin_repo, git_local_repo
 
 
 def get_colab_url2md(fname: Path, branch="main", github_repo="nb_helpers", as_badge=False) -> str:
@@ -62,14 +62,13 @@ def after_pr_colab_link(owner="wandb", repo="nb_helpers", token=None):
 
 def create_issue_nb_fail(fname, traceback=None, owner="wandb", repo="nb_helpers", token=None):
     "Creates issue of failing nb"
-
+    print("="*75)
     api = GhApi(owner=owner, repo=repo, token=ifnone(token, github_token()))
     fname = fname.resolve()
     github_repo = git_origin_repo(fname)
-    fname = str(fname).split(github_repo)[1]
-    print(fname)
     title = f"Failed to run {fname}"
     branch = git_main_name(fname)
+    fname = fname.relative_to(git_local_repo(fname))
     repo_url = f"[{str(fname)}](https://github.com/{github_repo}/blob/{branch}{str(fname)})"
     colab_url = get_colab_url2md(fname, branch, github_repo, as_badge=True)
     traceback = ifnone(traceback, "")

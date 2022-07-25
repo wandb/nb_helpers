@@ -71,8 +71,8 @@ def run_one(
     no_run: bool = False,
     pip_install=False,
     github_issue=False,
-    repo="nb_helpers",
-    owner="wandb",
+    repo=None,
+    owner=None,
 ):
     "Run nb `fname` and timeit, recover exception"
     did_run, skip, exec_time = False, False, time.time()
@@ -103,8 +103,8 @@ def run_nbs(
     no_run: Param("Do not run any notebook", store_true) = False,
     pip_install: Param("Run cells with !pip install", store_true) = False,
     github_issue: Param("Create a github issue if notebook fails", store_true) = False,
-    repo: Param("Github repo to create issue in", str) = "nb_helpers",
-    owner: Param("Github owner to create issue in", str) = "wandb",
+    repo: Param("Github repo to create issue in", str) = None,
+    owner: Param("Github owner to create issue in", str) = None,
 ):
     if verbose:
         logger.logger.setLevel(logging.DEBUG)
