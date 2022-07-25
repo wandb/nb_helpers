@@ -300,9 +300,9 @@ def git_origin_repo(fname):
 
         # check if ssh or html
         if "git@" in repo_url:
-            github_repo = re.search(r":(.*?).git", repo_url).group(1)
+            github_repo = re.search(r".com:(.*).git", repo_url).group(1)
         else:
-            github_repo = re.search(r".com/(.*)", repo_url).group(1)
+            github_repo = re.search(r".com/(.*).git", repo_url).group(1)
         return github_repo
 
     except Exception as e:
