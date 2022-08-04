@@ -20,6 +20,7 @@ pip install -e .
 This little library gives you command line tools to clean, test and check your jupyter notebooks.
 
 - Clean: When you call `clean_nbs` it will strip notebooks from the metadata, this helps prevent git conflicts. You can also pass the flag `--clear_outs` and also remove cell outputs.
+
 ```bash
 $ nb_helpers.clean_nbs --help                                                                                                                                   tcapelle at MBP14.local (-)(main)
 usage: nb_helpers.clean_nbs [-h] [--path PATH] [--clear_outs] [--verbose]
@@ -49,7 +50,9 @@ $ nb_helpers.clean_nbs
 │ tests/data/test_nb.ipynb                        │ Ok✔    │
 └─────────────────────────────────────────────────┴────────┘
 ```
+
 - Run: One can run the notebooks in `path` and get info about the execution.
+
 ```bash
 $ nb_helpers.run_nbs --help                                                                                                                                     tcapelle at MBP14.local (-)(main)
 usage: nb_helpers.run_nbs [-h] [--path PATH] [--verbose] [--flags FLAGS] [--timeout TIMEOUT] [--lib_name LIB_NAME] [--no_run] [--post_issue]
@@ -64,21 +67,25 @@ options:
   --no_run             Do not run any notebook (default: False)
   --post_issue         Post the failure in github (default: False)
 ```
+
 You get the following output inside this repo:
+
 ```bash
 $ nb_helpers.run_nbs
 CONSOLE.is_terminal(): True
 Writing output to run.csv
 ```
+
  | Notebook Path |Status |Run Time |colab |
- |--- | --- | --- | --- | 
- | dev_nbs/search.ipynb | Fail | 1 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/dev_nbs/search.ipynb) | 
- | tests/data/dummy_folder/fail_nb.ipynb | Fail | 1 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/dummy_folder/fail_nb.ipynb) | 
- | tests/data/dummy_folder/test_nb2.ipynb | Ok | 0 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/dummy_folder/test_nb2.ipynb) | 
- | tests/data/dummy_folder/test_nb_all_slow.ipynb | Skipped | 0 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/dummy_folder/test_nb_all_slow.ipynb) | 
- | tests/data/dummy_folder/test_nb_some_slow.ipynb | Ok | 0 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/dummy_folder/test_nb_some_slow.ipynb) | 
- | tests/data/features_nb.ipynb | Ok | 0 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/features_nb.ipynb) | 
- | tests/data/test_nb.ipynb | Ok | 0 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/test_nb.ipynb) | 
+ |--- | --- | --- | --- |
+ | dev_nbs/search.ipynb | Fail | 1 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/dev_nbs/search.ipynb) |
+ | tests/data/dummy_folder/fail_nb.ipynb | Fail | 1 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/dummy_folder/fail_nb.ipynb) |
+ | tests/data/dummy_folder/test_nb2.ipynb | Ok | 0 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/dummy_folder/test_nb2.ipynb) |
+ | tests/data/dummy_folder/test_nb_all_slow.ipynb | Skipped | 0 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/dummy_folder/test_nb_all_slow.ipynb) |
+ | tests/data/dummy_folder/test_nb_some_slow.ipynb | Ok | 0 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/dummy_folder/test_nb_some_slow.ipynb) |
+ | tests/data/features_nb.ipynb | Ok | 0 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/features_nb.ipynb) |
+ | tests/data/test_nb.ipynb | Ok | 0 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/test_nb.ipynb) |
+
 - Summary:
 You can get a summary of the notebooks in your project with the `nb_helpers.summary_nbs` function.
 
@@ -98,10 +105,13 @@ Reading 6 notebooks
 │ 6 │ tests/data/test_nb.ipynb                        │ 0: tracker │                │ os, sys, logging, pathlib, fastcore, itertools │ 1          │ open  │
 └───┴─────────────────────────────────────────────────┴────────────┴────────────────┴────────────────────────────────────────────────┴────────────┴───────┘
 ```
+
 ------------
+
 ## Python Lib
 
 All this functions can also be used inside python:
+
 ```python
 from pathlib import Path
 from nb_helpers.run import run_nbs
@@ -110,7 +120,9 @@ examples_path = Path("examples/colabs")
 
 errors = run_nbs(path=examples_path, verbose=True, timeout=600)
 ```
+
 Also the library has many little functions to make your life easier inside the repo you are orchestrating:
+
 ```python
 from pathlib import Path
 from nb_helpers.utils import *
