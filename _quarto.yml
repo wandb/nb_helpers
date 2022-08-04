@@ -18,7 +18,7 @@ website:
   twitter-card: true
   reader-mode: true
   repo-branch: master
-  repo-url: https://github.com/muellerzr/nb_helpers
+  repo-url: https://github.com/wandb/nb_helpers
   repo-actions: [issue]
   navbar:
     background: primary
@@ -28,7 +28,7 @@ website:
         file: index.ipynb
     right:
       - icon: github
-        href: https://github.com/muellerzr/nb_helpers
+        href: https://github.com/wandb/nb_helpers
   sidebar:
     style: "floating"
 
