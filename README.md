@@ -54,19 +54,24 @@ $ nb_helpers.clean_nbs
 - Run: One can run the notebooks in `path` and get info about the execution.
 
 ```bash
-$ nb_helpers.run_nbs --help                                                                                                                                     tcapelle at MBP14.local (-)(main)
-usage: nb_helpers.run_nbs [-h] [--path PATH] [--verbose] [--flags FLAGS] [--timeout TIMEOUT] [--lib_name LIB_NAME] [--no_run] [--post_issue]
+$ nb_helpers.run_nbs --help                                                                                                                                tcapelle at MBP14 (--)(main)
+usage: nb_helpers.run_nbs [-h] [--verbose] [--lib_name LIB_NAME] [--no_run] [--pip_install] [--github_issue] [--repo REPO] [--owner OWNER] [path]
+
+positional arguments:
+  path                 A path to nb files (default: /Users/tcapelle/wandb/nb_helpers)
 
 options:
   -h, --help           show this help message and exit
-  --path PATH          A path to nb files (default: .)
   --verbose            Print errors along the way (default: False)
-  --flags FLAGS        Space separated list of flags
-  --timeout TIMEOUT    Max runtime for each notebook, in seconds (default: 600)
   --lib_name LIB_NAME  Python lib names to filter, eg: tensorflow
   --no_run             Do not run any notebook (default: False)
-  --post_issue         Post the failure in github (default: False)
+  --pip_install        Run cells with !pip install (default: False)
+  --github_issue       Create a github issue if notebook fails (default: False)
+  --repo REPO          Github repo to create issue in (default: nb_helpers)
+  --owner OWNER        Github owner to create issue in (default: wandb)
 ```
+
+> You can now post github issues when running fails, the cool thing is that it can be posted to another repo than the one from the notebooks. Just pass the `--repo` name and the `--owner` (for example `wandb/other_cool_repo`)
 
 You get the following output inside this repo:
 
