@@ -1,0 +1,21 @@
+
+
+name: CI
+on:  [workflow_dispatch, pull_request, push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: fastai/workflows/nbdev-ci@master
+        with:
+          pre: 1
+      - name: clone nbdev
+        uses: actions/checkout@v3
+        with:
+          repository: 'fastai/nbdev'
+          path: nbdev
+      - name: Run nbdev tests
+        run: |
+          cd nbdev && pip install -Ue ".[dev]"
+          nbdev_test
