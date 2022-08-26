@@ -3,13 +3,13 @@
 # %% auto 0
 __all__ = ['get_colab_url2md', 'create_comment_body', 'after_pr_colab_link', 'create_issue_nb_fail']
 
-# %% ../nbs/03_actions.ipynb 2
+# %% ../nbs/03_actions.ipynb 3
 from fastcore.all import *
 from ghapi.all import *
 
 from .utils import git_main_name, is_nb, git_origin_repo, git_local_repo
 
-# %% ../nbs/03_actions.ipynb 3
+# %% ../nbs/03_actions.ipynb 5
 def get_colab_url2md(fname: Path, branch="main", github_repo="nb_helpers", as_badge=False) -> str:
     "Create colab links in md"
     colab_url = f"https://colab.research.google.com/github/{github_repo}/blob/{branch}/{str(fname)}"
@@ -17,14 +17,14 @@ def get_colab_url2md(fname: Path, branch="main", github_repo="nb_helpers", as_ba
         return f"[{fname}]({colab_url})"
     return f"[![badge](https://colab.research.google.com/assets/colab-badge.svg)]({colab_url})"
 
-# %% ../nbs/03_actions.ipynb 4
+# %% ../nbs/03_actions.ipynb 10
 def create_comment_body(title, nb_files, branch, github_repo) -> str:
     "Creates a MD list of fnames with links to colab"
     colab_links = tuple(get_colab_url2md(f, branch, github_repo) for f in nb_files)
     body = tuplify(title) + colab_links
     return "\n -".join(body)
 
-# %% ../nbs/03_actions.ipynb 5
+# %% ../nbs/03_actions.ipynb 12
 def after_pr_colab_link(owner="wandb", repo="nb_helpers", token=None):
     "On PR post a comment with links to open in colab for each changed nb"
 
@@ -65,7 +65,7 @@ def after_pr_colab_link(owner="wandb", repo="nb_helpers", token=None):
             print(f">> Creating comment on PR #{issue}\n{body}\n")
             api.issues.create_comment(issue_number=issue, body=body)
 
-# %% ../nbs/03_actions.ipynb 6
+# %% ../nbs/03_actions.ipynb 13
 def create_issue_nb_fail(fname, traceback=None, owner="wandb", repo="nb_helpers", token=None):
     "Creates issue of failing nb"
     print("="*75)

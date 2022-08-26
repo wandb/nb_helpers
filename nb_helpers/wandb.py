@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['WANDB_FEATURES', 'PYTHON_LIBS', 'get_wandb_tracker', 'search_code', 'summary_nbs', 'fix_nbs', 'filter_nbs']
 
-# %% ../nbs/01_wandb.ipynb 2
+# %% ../nbs/01_wandb.ipynb 3
 import re, os
 from pathlib import Path
 from fastcore.script import Param, call_parse, store_true
@@ -22,13 +22,13 @@ from nb_helpers.utils import (
 from .clean import clean_nb, clean_one
 from .colab import add_colab_badge, add_colab_metadata, get_colab_url, has_colab_badge
 
-# %% ../nbs/01_wandb.ipynb 3
+# %% ../nbs/01_wandb.ipynb 5
 WANDB_FEATURES = "Table,sweep,WandbCallback,WandbLogger,Artifact"
 
-# %% ../nbs/01_wandb.ipynb 4
+# %% ../nbs/01_wandb.ipynb 6
 PYTHON_LIBS = "torch,keras,tensorflow,sklearn,yolo,jax,pandas,numpy,spacy,transformers,lightning,fastai"
 
-# %% ../nbs/01_wandb.ipynb 5
+# %% ../nbs/01_wandb.ipynb 7
 def get_wandb_tracker(nb):
     "Get the value inside <!--- @wandbcode{tracker} -->"
     for cell in nb["cells"]:
@@ -37,7 +37,7 @@ def get_wandb_tracker(nb):
             return tracker_id.split(",")[0]
     return ""
 
-# %% ../nbs/01_wandb.ipynb 6
+# %% ../nbs/01_wandb.ipynb 9
 def search_code(nb, features=WANDB_FEATURES):
     "Search notebook for features"
     present_features = []
@@ -46,13 +46,12 @@ def search_code(nb, features=WANDB_FEATURES):
             present_features.append(feat)
     return present_features
 
-# %% ../nbs/01_wandb.ipynb 7
+# %% ../nbs/01_wandb.ipynb 11
 @call_parse
 def summary_nbs(
     path: Param("A path to nb files", Path, nargs="?", opt=False) = os.getcwd(),
     wandb_features: Param("wandb features to identify, comma separated", str) = WANDB_FEATURES,
     out_file: Param("Export to csv file", Path) = "summary_table.csv",
-    github_issue: Param("Creates a `github_issue.md` file ready to be put online", store_true) = True,
     full_path: Param("Use full path for fname", store_true) = False,
 ):
     path = Path(path)
@@ -87,10 +86,7 @@ def summary_nbs(
     logger.to_csv(Path(out_file).with_suffix(".csv"))
     logger.to_md(Path(out_file).with_suffix(".md"))
 
-    if github_issue:
-        logger.create_github_issue()
-
-# %% ../nbs/01_wandb.ipynb 8
+# %% ../nbs/01_wandb.ipynb 13
 @call_parse
 def fix_nbs(
     path: Param("A path to nb files", Path, nargs="?", opt=False) = os.getcwd(),
@@ -114,7 +110,7 @@ def fix_nbs(
         clean_nb(nb)
         write_nb(nb, nb_path)
 
-# %% ../nbs/01_wandb.ipynb 9
+# %% ../nbs/01_wandb.ipynb 17
 @call_parse
 def filter_nbs(
     path: Param("A path to nb files", Path, nargs="?", opt=False) = os.getcwd(),
