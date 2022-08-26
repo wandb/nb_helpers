@@ -54,7 +54,7 @@ def remove_rich_format(text):
 # %% ../nbs/02_utils.ipynb 12
 def _csv_to_md(csv_file_path, delimiter=";"):
     
-    output_file = Path(csv_file_path).with_suffix(".md")
+    
     csv_dict = csv.DictReader(open(csv_file_path, encoding="UTF-8"), delimiter=delimiter)
     list_of_rows = [dict_row for dict_row in csv_dict]
     headers = list(list_of_rows[0].keys())
@@ -77,6 +77,7 @@ def _csv_to_md(csv_file_path, delimiter=";"):
 def csv_to_md(csv_file_path, delimiter=";"):
     "From csv file to markdown table, useful for github posting"
     md_string = _csv_to_md(csv_file_path, delimiter)
+    output_file = Path(csv_file_path).with_suffix(".md")
     file = open(output_file, "w", encoding="UTF-8")
     file.write(md_string)
     file.close()

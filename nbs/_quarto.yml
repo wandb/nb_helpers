@@ -12,25 +12,27 @@ format:
     theme: cosmo
     css: styles.css
     toc: true
+    toc-depth: 4
 
 website:
   title: "nb_helpers"
+  site-url: "https://wandb.github.io/nb_helpers/"
+  description: "A set of tools for nb handling"
   twitter-card: true
+  open-graph: true
   reader-mode: true
-  repo-branch: master
-  repo-url: https://github.com/wandb/nb_helpers
+  repo-branch: main
+  repo-url: "https://github.com/wandb/nb_helpers/tree/main/"
   repo-actions: [issue]
   navbar:
     background: primary
     search: true
-    left:
-      - text: Home
-        file: index.ipynb
     right:
       - icon: github
-        href: https://github.com/wandb/nb_helpers
+        href: "https://github.com/wandb/nb_helpers/tree/main/"
   sidebar:
     style: "floating"
 
 metadata-files: 
   - sidebar.yml
+  - custom.yml
