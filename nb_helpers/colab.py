@@ -6,6 +6,8 @@ __all__ = ['get_colab_url', 'has_colab_badge', 'create_colab_badge_cell', 'add_c
 # %% ../nbs/00_colab.ipynb 3
 from pathlib import Path
 from IPython import get_ipython
+from IPython.display import display, Markdown
+
 from fastcore.basics import ifnone
 
 from execnb.nbio import NbCell, read_nb

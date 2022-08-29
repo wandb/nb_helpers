@@ -148,3 +148,6 @@ outputs/*
 
 # Apple
 *.pkg
+
+# Quarto
+_docs
