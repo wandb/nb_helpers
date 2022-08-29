@@ -1,0 +1,9 @@
+website:
+  sidebar:
+    contents:
+      - 00_colab.ipynb
+      - 01_wandb.ipynb
+      - 02_utils.ipynb
+      - 03_actions.ipynb
+      - 04_clean.ipynb
+      - 05_run.ipynb
