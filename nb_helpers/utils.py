@@ -287,11 +287,11 @@ def git_current_branch(fname) -> str:
         return "master"
 
 # %% ../nbs/02_utils.ipynb 52
-def git_branches(repo: git.Repo):
+def git_branches(repo: git.Repo, remote=True):
     "Get all remote or local banches"
     branches = set([b.name for b in repo.branches])
     remote_branches =  set([r.name.split("/")[-1] for r in repo.remote().refs])
-    return branches.union(remote_branches)
+    return branches.union(remote_branches) if remote else branches
 
 # %% ../nbs/02_utils.ipynb 54
 def git_main_name(fname) -> str:
