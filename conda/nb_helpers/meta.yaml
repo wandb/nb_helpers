@@ -1,0 +1,178 @@
+package:
+  name: nb_helpers
+  version: 0.3.2
+source:
+  sha256: 9d1b7ac9c74daa580e45e5d90ec7c29265e32780149749c01ed9dec0eb51e129
+  url: https://files.pythonhosted.org/packages/81/0e/873bacdc1efb4f36839bc05c9f9331a052e7339187cdc32497cc7ce8f86c/nb_helpers-0.3.2.tar.gz
+about:
+  description: "![CI](https://github.com/wandb/nb_helpers/workflows/CI/badge.svg)\n\
+    [![codecov](https://codecov.io/gh/wandb/nb_helpers/branch/main/graph/badge.svg?token=2W6CRFZ7CB)](https://codecov.io/gh/wandb/nb_helpers)\n\
+    [![PyPI](https://img.shields.io/pypi/v/nb-helpers?color=blue&label=pypi%20version)](https://pypi.org/project/nb_helpers/#description)\n\
+    # nb_helpers\n\nA simple tool to clean, test and fix notebooks for your repo\n\
+    \n## Install\nYou can install from pypi:\n```bash\npip install nb_helpers\n```\n\
+    or get latest:\n```bash\npip install -e .\n```\n\n## Usage\n\nThis little library\
+    \ gives you command line tools to clean, test and check your jupyter notebooks.\n\
+    \n- Clean: When you call `clean_nbs` it will strip notebooks from the metadata,\
+    \ this helps prevent git conflicts. You can also pass the flag `--clear_outs`\
+    \ and also remove cell outputs.\n\n```bash\n$ nb_helpers.clean_nbs --help    \
+    \                                                                            \
+    \                                                   tcapelle at MBP14.local (-)(main)\n\
+    usage: nb_helpers.clean_nbs [-h] [--path PATH] [--clear_outs] [--verbose]\n\n\
+    Clean notebooks on `path` from useless metadata\n\noptions:\n  -h, --help    show\
+    \ this help message and exit\n  --path PATH   The path to notebooks (default:\
+    \ .)\n  --clear_outs  Remove cell outputs (default: False)\n  --verbose     Rnun\
+    \ on verbose mdoe (default: False)\n```\n\nYou can run this comman on this repo:\n\
+    \n```bash\n$ nb_helpers.clean_nbs\n> \n\u250F\u2501\u2501\u2501\u2501\u2501\u2501\
+    \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+    \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+    \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+    \u2501\u2501\u2501\u2501\u2533\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+    \u2513                                                                     \n\u2503\
+    \ Notebook Path                                   \u2503 Status \u2503\n\u2521\
+    \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+    \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+    \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+    \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2547\u2501\u2501\
+    \u2501\u2501\u2501\u2501\u2501\u2501\u2529\n\u2502 tests/data/dummy_folder/fail_nb.ipynb\
+    \           \u2502 Ok\u2714    \u2502\n\u2502 tests/data/dummy_folder/test_nb2.ipynb\
+    \          \u2502 Ok\u2714    \u2502\n\u2502 tests/data/dummy_folder/test_nb_all_slow.ipynb\
+    \  \u2502 Ok\u2714    \u2502\n\u2502 tests/data/dummy_folder/test_nb_some_slow.ipynb\
+    \ \u2502 Ok\u2714    \u2502\n\u2502 tests/data/features_nb.ipynb             \
+    \       \u2502 Ok\u2714    \u2502\n\u2502 tests/data/test_nb.ipynb           \
+    \             \u2502 Ok\u2714    \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2518\n```\n\n- Run: One can run the notebooks in `path` and get info about the\
+    \ execution.\n\n```bash\n$ nb_helpers.run_nbs --help                         \
+    \                                                                            \
+    \                           tcapelle at MBP14 (--)(main)\nusage: nb_helpers.run_nbs\
+    \ [-h] [--verbose] [--lib_name LIB_NAME] [--no_run] [--pip_install] [--github_issue]\
+    \ [--repo REPO] [--owner OWNER] [path]\n\npositional arguments:\n  path      \
+    \           A path to nb files (default: /Users/tcapelle/wandb/nb_helpers)\n\n\
+    options:\n  -h, --help           show this help message and exit\n  --verbose\
+    \            Print errors along the way (default: False)\n  --lib_name LIB_NAME\
+    \  Python lib names to filter, eg: tensorflow\n  --no_run             Do not run\
+    \ any notebook (default: False)\n  --pip_install        Run cells with !pip install\
+    \ (default: False)\n  --github_issue       Create a github issue if notebook fails\
+    \ (default: False)\n  --repo REPO          Github repo to create issue in (default:\
+    \ nb_helpers)\n  --owner OWNER        Github owner to create issue in (default:\
+    \ wandb)\n```\n\n> You can now post github issues when running fails, the cool\
+    \ thing is that it can be posted to another repo than the one from the notebooks.\
+    \ Just pass the `--repo` name and the `--owner` (for example `wandb/other_cool_repo`)\n\
+    \nYou get the following output inside this repo:\n\n```bash\n$ nb_helpers.run_nbs\n\
+    CONSOLE.is_terminal(): True\nWriting output to run.csv\n```\n\n | Notebook Path\
+    \ |Status |Run Time |colab |\n |--- | --- | --- | --- |\n | dev_nbs/search.ipynb\
+    \ | Fail | 1 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/dev_nbs/search.ipynb)\
+    \ |\n | tests/data/dummy_folder/fail_nb.ipynb | Fail | 1 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/dummy_folder/fail_nb.ipynb)\
+    \ |\n | tests/data/dummy_folder/test_nb2.ipynb | Ok | 0 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/dummy_folder/test_nb2.ipynb)\
+    \ |\n | tests/data/dummy_folder/test_nb_all_slow.ipynb | Skipped | 0 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/dummy_folder/test_nb_all_slow.ipynb)\
+    \ |\n | tests/data/dummy_folder/test_nb_some_slow.ipynb | Ok | 0 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/dummy_folder/test_nb_some_slow.ipynb)\
+    \ |\n | tests/data/features_nb.ipynb | Ok | 0 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/features_nb.ipynb)\
+    \ |\n | tests/data/test_nb.ipynb | Ok | 0 s | [open](https://colab.research.google.com/github/wandb/nb_helpers/blob/main/tests/data/test_nb.ipynb)\
+    \ |\n\n- Summary:\nYou can get a summary of the notebooks in your project with\
+    \ the `nb_helpers.summary_nbs` function.\n\n```bash\n$ nb_helpers.summary_nbs\n\
+    CONSOLE.is_terminal(): True\nWriting output to /Users/tcapelle/wandb/nb_helpers/logs/summary.csv\n\
+    Reading 6 notebooks\n\u250C\u2500\u2500\u2500\u252C\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u252C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u252C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252C\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u252C\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u252C\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2510\n\u2502 # \u2502 nb name                                        \
+    \ \u2502 tracker    \u2502 wandb features \u2502 python libs                 \
+    \                   \u2502 colab_cell \u2502 colab \u2502\n\u251C\u2500\u2500\u2500\
+    \u253C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253C\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253C\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u253C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253C\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253C\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\n\u2502 1 \u2502 tests/data/dummy_folder/fail_nb.ipynb\
+    \           \u2502            \u2502                \u2502                   \
+    \                             \u2502            \u2502 open  \u2502\n\u2502 2\
+    \ \u2502 tests/data/dummy_folder/test_nb2.ipynb          \u2502            \u2502\
+    \                \u2502                                                \u2502\
+    \            \u2502 open  \u2502\n\u2502 3 \u2502 tests/data/dummy_folder/test_nb_all_slow.ipynb\
+    \  \u2502            \u2502                \u2502 time                       \
+    \                    \u2502            \u2502 open  \u2502\n\u2502 4 \u2502 tests/data/dummy_folder/test_nb_some_slow.ipynb\
+    \ \u2502            \u2502                \u2502 time                        \
+    \                   \u2502            \u2502 open  \u2502\n\u2502 5 \u2502 tests/data/features_nb.ipynb\
+    \                    \u2502            \u2502                \u2502 typing, itertools\
+    \                              \u2502            \u2502 open  \u2502\n\u2502 6\
+    \ \u2502 tests/data/test_nb.ipynb                        \u2502 0: tracker \u2502\
+    \                \u2502 os, sys, logging, pathlib, fastcore, itertools \u2502\
+    \ 1          \u2502 open  \u2502\n\u2514\u2500\u2500\u2500\u2534\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\
+    \u2500\u2500\u2500\u2518\n```\n\n------------\n\n## Python Lib\n\nAll this functions\
+    \ can also be used inside python:\n\n```python\nfrom pathlib import Path\nfrom\
+    \ nb_helpers.run import run_nbs\n\nexamples_path = Path(\"examples/colabs\")\n\
+    \nerrors = run_nbs(path=examples_path, verbose=True, timeout=600)\n```\n\nAlso\
+    \ the library has many little functions to make your life easier inside the repo\
+    \ you are orchestrating:\n\n```python\nfrom pathlib import Path\nfrom nb_helpers.utils\
+    \ import *\nfrom nb_helpers.colab import *\n\nexamples_path = Path(\"examples/colabs\"\
+    )\n\n# get all nbs in the folder recursevely, filters hidden, non nb stuff\nnb_files\
+    \ = find_nbs(example_path)\n\none_nb_path = nb_files[0]\nnotebook = read_nb(one_nb_path)\n\
+    \n# get all libs imported\nlibs = detect_imported_libs(notebook)\n\n# get remote\
+    \ github repo\ngithub_repo = git_origin_repo(one_nb_path)\n\n# detect if master\
+    \ is called main or master\nmaster_name = git_main_name(one_nb_path)\n\n# get\
+    \ colab link\ncolab_url = get_colab_url(one_nb_path, branch) \n```\n"
+  dev_url: https://wandb.github.io
+  doc_url: https://wandb.github.io
+  home: https://wandb.github.io
+  license: Apache Software
+  license_family: APACHE
+  summary: A set of tools for nb handling
+build:
+  noarch: python
+  number: '0'
+  script: '{{ PYTHON }} -m pip install . -vv'
+extra:
+  recipe-maintainers:
+  - wandb
+requirements:
+  host:
+  - pip
+  - python
+  - packaging
+  - rich
+  - fastcore
+  - ipython
+  - execnb
+  - ghapi
+  - GitPython
+  run:
+  - pip
+  - python
+  - packaging
+  - rich
+  - fastcore
+  - ipython
+  - execnb
+  - ghapi
+  - GitPython
+test:
+  imports:
+  - nb_helpers
