@@ -20,7 +20,6 @@ website:
   description: "A set of tools for nb handling"
   twitter-card: true
   open-graph: true
-  reader-mode: true
   repo-branch: main
   repo-url: "https://github.com/wandb/nb_helpers/tree/main/"
   repo-actions: [issue]
