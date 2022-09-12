@@ -294,6 +294,14 @@ def git_main_name(fname) -> str:
     return "main" if "main" in branches else "master"
 
 # %% ../nbs/02_utils.ipynb 54
+def _get_github_repo_remote(repo_url):
+    if "git@" in repo_url:
+        github_repo = re.search(r".com:(.*).git", repo_url).group(1)
+    else:
+        github_repo = re.search(r".com/(.*)", repo_url).group(1)
+    return github_repo
+
+# %% ../nbs/02_utils.ipynb 56
 def git_origin_repo(fname):
     "Get github repo name from `fname`"
     repo = get_repo(fname)
@@ -301,27 +309,23 @@ def git_origin_repo(fname):
 
     # check if ssh or html
     if repo_url != "":
-        if "git@" in repo_url:
-            github_repo = re.search(r".com:(.*).git", repo_url).group(1)
-        else:
-            github_repo = re.search(r".com/(.*).git", repo_url).group(1)
-        return github_repo
+        return _get_github_repo_remote(repo_url)
     else:
         raise Exception(f"Not in a valid github repo: {fname=}")
 
-# %% ../nbs/02_utils.ipynb 56
+# %% ../nbs/02_utils.ipynb 58
 def git_local_repo(fname):
     "Get local github repo path"
     repo = get_repo(fname)
     return Path(repo.git_dir).parent.resolve()
 
-# %% ../nbs/02_utils.ipynb 58
+# %% ../nbs/02_utils.ipynb 60
 def git_last_commit(fname):
     "Gets the last commit on fname"
     repo = get_repo(fname)
     return repo.commit().hexsha
 
-# %% ../nbs/02_utils.ipynb 61
+# %% ../nbs/02_utils.ipynb 63
 def today():
     "datetime object containing current date and time"
     now = datetime.now()
