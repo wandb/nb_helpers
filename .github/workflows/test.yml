@@ -7,6 +7,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: fastai/workflows/nbdev-ci@master
+      - uses: action
         with:
           pre: 1
