@@ -145,3 +145,9 @@ logs
 02_colab_action.ipynb
 dev_nbs/*
 outputs/*
+
+# Apple
+*.pkg
+
+# Quarto
+_docs
