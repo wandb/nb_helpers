@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['LOGFORMAT', 'LOGFORMAT_RICH', 'STATUS', 'CellType', 'create_table', 'remove_rich_format', 'csv_to_md', 'RichLogger',
            'is_nb', 'find_nbs', 'print_output', 'search_cell', 'search_cells', 'search_string_in_nb', 'extract_libs',
-           'detect_imported_libs', 'get_repo', 'git_current_branch', 'git_main_name', 'git_origin_repo',
+           'detect_imported_libs', 'get_repo', 'git_current_branch', 'git_branches', 'git_main_name', 'git_origin_repo',
            'git_local_repo', 'git_last_commit', 'today']
 
 # %% ../nbs/02_utils.ipynb 3
@@ -287,13 +287,20 @@ def git_current_branch(fname) -> str:
         return "master"
 
 # %% ../nbs/02_utils.ipynb 52
+def git_branches(repo: git.Repo):
+    "Get all remote or local banches"
+    branches = set([b.name for b in repo.branches])
+    remote_branches =  set([r.name.split("/")[-1] for r in repo.remote().refs])
+    return branches.union(remote_branches)
+
+# %% ../nbs/02_utils.ipynb 54
 def git_main_name(fname) -> str:
     "Get the name of master/main branch"
     repo = get_repo(fname)
-    branches = [b.name for b in repo.branches]
+    branches = git_branches(repo)
     return "main" if "main" in branches else "master"
 
-# %% ../nbs/02_utils.ipynb 54
+# %% ../nbs/02_utils.ipynb 56
 def _get_github_repo_remote(repo_url):
     if "git@" in repo_url:
         github_repo = re.search(r".com:(.*).git", repo_url).group(1)
@@ -301,7 +308,7 @@ def _get_github_repo_remote(repo_url):
         github_repo = re.search(r".com/(.*)", repo_url).group(1)
     return github_repo
 
-# %% ../nbs/02_utils.ipynb 56
+# %% ../nbs/02_utils.ipynb 58
 def git_origin_repo(fname):
     "Get github repo name from `fname`"
     repo = get_repo(fname)
@@ -313,19 +320,19 @@ def git_origin_repo(fname):
     else:
         raise Exception(f"Not in a valid github repo: {fname=}")
 
-# %% ../nbs/02_utils.ipynb 58
+# %% ../nbs/02_utils.ipynb 60
 def git_local_repo(fname):
     "Get local github repo path"
     repo = get_repo(fname)
     return Path(repo.git_dir).parent.resolve()
 
-# %% ../nbs/02_utils.ipynb 60
+# %% ../nbs/02_utils.ipynb 62
 def git_last_commit(fname):
     "Gets the last commit on fname"
     repo = get_repo(fname)
     return repo.commit().hexsha
 
-# %% ../nbs/02_utils.ipynb 63
+# %% ../nbs/02_utils.ipynb 65
 def today():
     "datetime object containing current date and time"
     now = datetime.now()
