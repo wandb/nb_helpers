@@ -304,8 +304,7 @@ def git_origin_repo(fname):
         return github_repo
 
     except Exception as e:
-        print(f"Probably not in a git repo: {e}")
-        return ""
+        raise e
 
 # %% ../nbs/02_utils.ipynb 54
 def git_local_repo(fname):
