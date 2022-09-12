@@ -1,5 +1,4 @@
-![CI](https://github.com/wandb/nb_helpers/workflows/CI/badge.svg)
-[![codecov](https://codecov.io/gh/wandb/nb_helpers/branch/main/graph/badge.svg?token=2W6CRFZ7CB)](https://codecov.io/gh/wandb/nb_helpers)
+![CI](https://github.com/wandb/nb_helpers/workflows/test/badge.svg)
 [![PyPI](https://img.shields.io/pypi/v/nb-helpers?color=blue&label=pypi%20version)](https://pypi.org/project/nb_helpers/#description)
 # nb_helpers
 
