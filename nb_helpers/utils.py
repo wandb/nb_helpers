@@ -3,8 +3,8 @@
 # %% auto 0
 __all__ = ['LOGFORMAT', 'LOGFORMAT_RICH', 'STATUS', 'CellType', 'create_table', 'remove_rich_format', 'csv_to_md', 'RichLogger',
            'is_nb', 'find_nbs', 'print_output', 'search_cell', 'search_cells', 'search_string_in_nb', 'extract_libs',
-           'detect_imported_libs', 'git_current_branch', 'git_main_name', 'git_origin_repo', 'git_local_repo',
-           'git_last_commit', 'today']
+           'detect_imported_libs', 'get_repo', 'git_current_branch', 'git_branches', 'git_main_name', 'git_origin_repo',
+           'git_local_repo', 'git_last_commit', 'today']
 
 # %% ../nbs/02_utils.ipynb 3
 import io, json, sys, re, csv, logging
@@ -270,56 +270,69 @@ def detect_imported_libs(notebook):
     return extract_libs(text_list)
 
 # %% ../nbs/02_utils.ipynb 48
+def get_repo(fname) -> git.Repo:
+    try:
+        repo = git.Repo(fname, search_parent_directories=True)
+        return repo
+    except Exception as e:
+        raise Exception(f"Probably not in a git repo: {e}")
+
+# %% ../nbs/02_utils.ipynb 50
 def git_current_branch(fname) -> str:
     "Get current git branch"
-    repo = git.Repo(fname, search_parent_directories=True)
+    repo = get_repo(fname)
     try:
         return repo.active_branch.name
     except Exception as e:
         return "master"
 
-# %% ../nbs/02_utils.ipynb 50
-def git_main_name(fname) -> str:
-    "Get the name of master/main branch"
-    try:
-        repo = git.Repo(fname, search_parent_directories=True)
-        branches = [b.name for b in repo.branches]
-    except Exception as e:
-        print(f"Probably not in a git repo: {e}")
-        return "master"
-    return "main" if "main" in branches else "master"
-
 # %% ../nbs/02_utils.ipynb 52
-def git_origin_repo(fname):
-    "Get github repo name from `fname`"
-    try:
-        repo = git.Repo(fname, search_parent_directories=True)
-        repo_url = repo.remote().url
-
-        # check if ssh or html
-        if "git@" in repo_url:
-            github_repo = re.search(r".com:(.*).git", repo_url).group(1)
-        else:
-            github_repo = re.search(r".com/(.*).git", repo_url).group(1)
-        return github_repo
-
-    except Exception as e:
-        print(f"Probably not in a git repo: {e}")
-        return ""
+def git_branches(repo: git.Repo, remote=True):
+    "Get all remote or local banches"
+    branches = set([b.name for b in repo.branches])
+    remote_branches =  set([r.name.split("/")[-1] for r in repo.remote().refs])
+    return branches.union(remote_branches) if remote else branches
 
 # %% ../nbs/02_utils.ipynb 54
-def git_local_repo(fname):
-    "Get local github repo path"
-    repo = git.Repo(fname, search_parent_directories=True)
-    return Path(repo.git_dir).parent.resolve()
+def git_main_name(fname) -> str:
+    "Get the name of master/main branch"
+    repo = get_repo(fname)
+    branches = git_branches(repo)
+    return "main" if "main" in branches else "master"
 
 # %% ../nbs/02_utils.ipynb 56
+def _get_github_repo_remote(repo_url):
+    if "git@" in repo_url:
+        github_repo = re.search(r".com:(.*).git", repo_url).group(1)
+    else:
+        github_repo = re.search(r".com/(.*)", repo_url).group(1)
+    return github_repo
+
+# %% ../nbs/02_utils.ipynb 58
+def git_origin_repo(fname):
+    "Get github repo name from `fname`"
+    repo = get_repo(fname)
+    repo_url = repo.remote().url
+
+    # check if ssh or html
+    if repo_url != "":
+        return _get_github_repo_remote(repo_url)
+    else:
+        raise Exception(f"Not in a valid github repo: {fname=}")
+
+# %% ../nbs/02_utils.ipynb 60
+def git_local_repo(fname):
+    "Get local github repo path"
+    repo = get_repo(fname)
+    return Path(repo.git_dir).parent.resolve()
+
+# %% ../nbs/02_utils.ipynb 62
 def git_last_commit(fname):
     "Gets the last commit on fname"
-    repo = git.Repo(fname, search_parent_directories=True)
+    repo = get_repo(fname)
     return repo.commit().hexsha
 
-# %% ../nbs/02_utils.ipynb 59
+# %% ../nbs/02_utils.ipynb 65
 def today():
     "datetime object containing current date and time"
     now = datetime.now()
