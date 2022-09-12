@@ -273,7 +273,10 @@ def detect_imported_libs(notebook):
 def git_current_branch(fname) -> str:
     "Get current git branch"
     repo = git.Repo(fname, search_parent_directories=True)
-    return repo.active_branch.name
+    try:
+        return repo.active_branch.name
+    except Exception as e:
+        return "master"
 
 # %% ../nbs/02_utils.ipynb 50
 def git_main_name(fname) -> str:
