@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['logger', 'skip_nb', 'exec_nb', 'run_one', 'run_nbs']
 
-# %% ../nbs/05_run.ipynb 2
+# %% ../nbs/05_run.ipynb 3
 import time, os, logging, re
 from pathlib import Path
 from typing import Union
@@ -19,17 +19,17 @@ from .actions import create_issue_nb_fail
 from .utils import find_nbs, git_main_name, search_string_in_nb, RichLogger
 from .colab import get_colab_url
 
-# %% ../nbs/05_run.ipynb 4
+# %% ../nbs/05_run.ipynb 5
 logger = RichLogger(columns=["fname", "status", "t[s]"])
 
-# %% ../nbs/05_run.ipynb 5
+# %% ../nbs/05_run.ipynb 6
 def skip_nb(notebook, filters=None):
     "check for notebook filters: tensorflow, pytorch, ..."
     if filters is None: 
         return False
     return search_string_in_nb(notebook, filters)
 
-# %% ../nbs/05_run.ipynb 7
+# %% ../nbs/05_run.ipynb 8
 def exec_nb(fname, pip_install=True):
     "Execute tests in notebook in `fn`"
     nb = read_nb(fname)
@@ -50,7 +50,7 @@ def exec_nb(fname, pip_install=True):
         return False, shell
     return True, shell
 
-# %% ../nbs/05_run.ipynb 9
+# %% ../nbs/05_run.ipynb 10
 @patch
 def prettytb(
     self: CaptureShell, fname: Union[Path, str] = None, simple=False
@@ -67,7 +67,7 @@ def prettytb(
         res = ansi_escape.sub("", res)
     return res
 
-# %% ../nbs/05_run.ipynb 11
+# %% ../nbs/05_run.ipynb 12
 def run_one(
     fname: Union[Path, str],
     lib_name: str = None,
@@ -97,7 +97,7 @@ def run_one(
             create_issue_nb_fail(fname, shell.prettytb(fname, simple=True), repo=repo, owner=owner)
     return "ok" if did_run else "fail", time.time() - exec_time
 
-# %% ../nbs/05_run.ipynb 13
+# %% ../nbs/05_run.ipynb 14
 @call_parse
 def run_nbs(
     path: Param("A path to nb files", Path, nargs="?", opt=False) = os.getcwd(),
@@ -113,6 +113,7 @@ def run_nbs(
         logger.logger.setLevel(logging.DEBUG)
     path = Path(path)
     files = find_nbs(path)
+    logger.info(f"Found {len(files)} notebooks in {path}")
     branch = git_main_name(files[0])
 
     with Progress(console=logger.console) as progress:
