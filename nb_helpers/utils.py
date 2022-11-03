@@ -191,10 +191,10 @@ def find_nbs(path: Path):
     "Get all nbs on path recursively"
     path = Path(path).resolve()
     if is_nb(path):
-        return [path.resolve()]
+        return [path]
     return L([nb.resolve() for nb in path.rglob("*.ipynb") if is_nb(nb)]).sorted()
 
-# %% ../nbs/02_utils.ipynb 27
+# %% ../nbs/02_utils.ipynb 30
 def print_output(notebook):  # pragma: no cover
     "Print `notebook` in stdout for git things"
     output_stream = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
@@ -203,10 +203,10 @@ def print_output(notebook):  # pragma: no cover
     output_stream.write("\n")
     output_stream.flush()
 
-# %% ../nbs/02_utils.ipynb 29
+# %% ../nbs/02_utils.ipynb 32
 CellType = SimpleNamespace(code="code", md="markdown")
 
-# %% ../nbs/02_utils.ipynb 30
+# %% ../nbs/02_utils.ipynb 33
 def search_cell(cell, string) -> bool:
     "Search string in cell source, can be a list"
     source = listify(cell["source"])
@@ -215,7 +215,7 @@ def search_cell(cell, string) -> bool:
         return True
     return False
 
-# %% ../nbs/02_utils.ipynb 33
+# %% ../nbs/02_utils.ipynb 36
 def search_cells(nb, string: str = None, cell_type=CellType.code):
     "Get cells containing string, you can pass comma separated strings"
     strings = ifnone(string, "").replace(" ", "").split(",")
@@ -226,12 +226,12 @@ def search_cells(nb, string: str = None, cell_type=CellType.code):
                 cells.append(cell["source"])
     return cells
 
-# %% ../nbs/02_utils.ipynb 37
+# %% ../nbs/02_utils.ipynb 40
 def search_string_in_nb(nb, string: str = None, cell_type=CellType.code):
     "Check if string is present in notebook cells, you can pass comma separated strings"
     return len(search_cells(nb, string, cell_type)) > 0
 
-# %% ../nbs/02_utils.ipynb 40
+# %% ../nbs/02_utils.ipynb 43
 def extract_libs(strings):
     "Automatically detect libraries imported in `strings`"
 
@@ -258,7 +258,7 @@ def extract_libs(strings):
             libs.append(string.replace(" ", "").split(","))
     return L(libs).concat().unique()
 
-# %% ../nbs/02_utils.ipynb 44
+# %% ../nbs/02_utils.ipynb 47
 def detect_imported_libs(notebook):
     "Guess imported libs from notebook"
     text_list = L(search_cells(notebook, "import,from")).concat()
@@ -269,7 +269,7 @@ def detect_imported_libs(notebook):
 
     return extract_libs(text_list)
 
-# %% ../nbs/02_utils.ipynb 48
+# %% ../nbs/02_utils.ipynb 51
 def get_repo(fname) -> git.Repo:
     try:
         repo = git.Repo(fname, search_parent_directories=True)
@@ -277,7 +277,7 @@ def get_repo(fname) -> git.Repo:
     except Exception as e:
         raise Exception(f"Probably not in a git repo: {e}")
 
-# %% ../nbs/02_utils.ipynb 50
+# %% ../nbs/02_utils.ipynb 53
 def git_current_branch(fname) -> str:
     "Get current git branch"
     repo = get_repo(fname)
@@ -286,21 +286,21 @@ def git_current_branch(fname) -> str:
     except Exception as e:
         return "master"
 
-# %% ../nbs/02_utils.ipynb 52
+# %% ../nbs/02_utils.ipynb 55
 def git_branches(repo: git.Repo, remote=True):
     "Get all remote or local banches"
     branches = set([b.name for b in repo.branches])
     remote_branches =  set([r.name.split("/")[-1] for r in repo.remote().refs])
     return branches.union(remote_branches) if remote else branches
 
-# %% ../nbs/02_utils.ipynb 54
+# %% ../nbs/02_utils.ipynb 57
 def git_main_name(fname) -> str:
     "Get the name of master/main branch"
     repo = get_repo(fname)
     branches = git_branches(repo)
     return "main" if "main" in branches else "master"
 
-# %% ../nbs/02_utils.ipynb 56
+# %% ../nbs/02_utils.ipynb 59
 def _get_github_repo_remote(repo_url):
     if "git@" in repo_url:
         github_repo = re.search(r".com:(.*).git", repo_url).group(1)
@@ -308,7 +308,7 @@ def _get_github_repo_remote(repo_url):
         github_repo = re.search(r".com/(.*)", repo_url).group(1)
     return github_repo
 
-# %% ../nbs/02_utils.ipynb 58
+# %% ../nbs/02_utils.ipynb 61
 def git_origin_repo(fname):
     "Get github repo name from `fname`"
     repo = get_repo(fname)
@@ -320,19 +320,19 @@ def git_origin_repo(fname):
     else:
         raise Exception(f"Not in a valid github repo: {fname=}")
 
-# %% ../nbs/02_utils.ipynb 60
+# %% ../nbs/02_utils.ipynb 63
 def git_local_repo(fname):
     "Get local github repo path"
     repo = get_repo(fname)
     return Path(repo.git_dir).parent.resolve()
 
-# %% ../nbs/02_utils.ipynb 62
+# %% ../nbs/02_utils.ipynb 65
 def git_last_commit(fname):
     "Gets the last commit on fname"
     repo = get_repo(fname)
     return repo.commit().hexsha
 
-# %% ../nbs/02_utils.ipynb 65
+# %% ../nbs/02_utils.ipynb 68
 def today():
     "datetime object containing current date and time"
     now = datetime.now()
