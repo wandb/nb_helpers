@@ -1,5 +1,5 @@
 rich
-execnb
+execnb<=0.1.3  # currently generates error on History
 fastcore
 ipython
 ghapi

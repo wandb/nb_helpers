@@ -26,6 +26,18 @@ def get_colab_url(fname, branch):
 # %% ../nbs/00_colab.ipynb 9
 _badge_meta = {"id": "view-in-github", "colab_type": "text"}
 
+# %% ../nbs/00_colab.ipynb 10
+def _create_colab_cell(url, meta={}, tracker=None):
+    "Creates a notebook cell with the `Open In Colab` badge"
+    tracker = ifnone(tracker, "")
+    data = {
+        "cell_type": "markdown",
+        "metadata": meta,
+        "source": f'<a href="{url}" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>\n'
+        + tracker,
+    }
+    return NbCell(-1, data)
+
 # %% ../nbs/00_colab.ipynb 12
 def has_colab_badge(nb):
     "Check if notebook has colab badge, returns the cell position, -1 if not present"
