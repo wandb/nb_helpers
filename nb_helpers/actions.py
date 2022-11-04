@@ -66,16 +66,17 @@ def after_pr_colab_link(owner="wandb", repo="nb_helpers", token=None):
         comment_id = _get_comment_id(issue)
         json.dump( {comment_id: body}, open("modified_colabs.json", 'w' ))
 
-# %% ../nbs/03_actions.ipynb 15
+# %% ../nbs/03_actions.ipynb 16
 def upload_at(owner="wandb", repo="nb_helpers", token=None):
     api, payload = get_api(owner, repo, token)
     json.dump( {0: "My dummy issue reply"}, open("reply.json", 'w' ))
     
 def download(owner="wandb", repo="nb_helpers", token=None):
     api, payload = get_api(owner, repo, token)
+    print(payload)
     print(api.actions.list_workflow_run_artifacts(context_github.run_id))
 
-# %% ../nbs/03_actions.ipynb 17
+# %% ../nbs/03_actions.ipynb 18
 def update_comment(issue, body, comment_id, owner="wandb", repo="nb_helpers", token=None):
     api, payload = get_api(owner, repo, token)
     
@@ -91,7 +92,7 @@ def update_comment(issue, body, comment_id, owner="wandb", repo="nb_helpers", to
         print(f">> Creating comment on PR #{issue}\n{body}\n")
         api.issues.create_comment(issue_number=issue, body=body)
 
-# %% ../nbs/03_actions.ipynb 18
+# %% ../nbs/03_actions.ipynb 19
 def create_issue_nb_fail(fname, traceback=None, owner="wandb", repo="nb_helpers", token=None):
     "Creates issue of failing nb"
     print("="*75)
