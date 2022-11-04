@@ -16,8 +16,8 @@ jobs:
       run: |
         pip install -Uq ghapi
         pip install -e .
-        python .github/scripts/open_in_colab.py
+        python .github/scripts/upload.py
     - uses: actions/upload-artifact@v3
       with:
-        name: pr_comment
-        path: modified_colabs.json
+        name: upload
+        path: reply.json
