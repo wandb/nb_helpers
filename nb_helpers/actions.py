@@ -69,12 +69,6 @@ def after_pr_colab_link(owner="wandb", repo="nb_helpers", token=None):
 # %% ../nbs/03_actions.ipynb 15
 def upload_at(owner="wandb", repo="nb_helpers", token=None):
     api, payload = get_api(owner, repo, token)
-
-    if "workflow" in payload:
-        issue = 1
-    else:
-        issue = payload.number
-        
     json.dump( {0: "My dummy issue reply"}, open("reply.json", 'w' ))
     
 def download(owner="wandb", repo="nb_helpers", token=None):
