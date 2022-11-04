@@ -1,5 +1,7 @@
-name: Upload
-on: [workflow_dispatch, pull_request]
+name: Download
+on: 
+  workflow_run:
+    workflows: [Download]
 defaults:
   run: { shell: bash }
 jobs:
@@ -16,8 +18,4 @@ jobs:
       run: |
         pip install -Uq ghapi
         pip install -e .
-        python .github/scripts/upload.py
-    - uses: actions/upload-artifact@v3
-      with:
-        name: upload
-        path: reply.json
+        python .github/scripts/download.py
