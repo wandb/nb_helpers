@@ -1,6 +1,9 @@
 name: Reply PR
-on: workflow_run:
-  workflows: [Open in Colab]
+on: 
+  workflow_run:
+    workflows: ["Open in Colab"]
+    types:
+      - completed
 defaults:
   run: { shell: bash }
 jobs:
