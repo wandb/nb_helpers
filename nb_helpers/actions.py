@@ -78,8 +78,8 @@ def after_pr_colab_link(owner="wandb", repo="nb_helpers", token=None):
     if len(nb_files) > 0:
         body = create_comment_body(title, nb_files, branch, github_repo)
         comment_id = _get_comment_id(issue)
-        with open("modified_colabs.txt") as f:
-            f.write(comment_id)
+        with open("modified_colabs.txt", "w") as f:
+            f.write(f"{comment_id}\n")
             f.write(body)
 
 # %% ../nbs/03_actions.ipynb 16
