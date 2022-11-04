@@ -1,7 +1,7 @@
 name: Download
 on: 
   workflow_run:
-    workflows: [Download]
+    workflows: [Upload]
 defaults:
   run: { shell: bash }
 jobs:
