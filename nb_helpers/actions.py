@@ -73,8 +73,10 @@ def upload_at(owner="wandb", repo="nb_helpers", token=None):
     
 def download(owner="wandb", repo="nb_helpers", token=None):
     api, payload = get_api(owner, repo, token)
+    print("HERE IS THE PAYLOAD\n=============")
     print(payload)
-    print(api.actions.list_workflow_run_artifacts(workflow_run.id))
+    print("=============\n\n")
+    print(api.actions.list_workflow_run_artifacts(payload.workflow_run.id))
 
 # %% ../nbs/03_actions.ipynb 18
 def update_comment(issue, body, comment_id, owner="wandb", repo="nb_helpers", token=None):
