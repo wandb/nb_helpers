@@ -78,6 +78,7 @@ def open_zip(zf, file="reply.json"):
 
 def upload_at(owner="wandb", repo="nb_helpers", token=None):
     api, payload = get_api(owner, repo, token)
+    print("Uploading file to artifact\n=============")
     json.dump( {0: "My dummy issue reply"}, open("reply.json", 'w' ))
     
 def download(owner="wandb", repo="nb_helpers", token=None):
@@ -86,7 +87,9 @@ def download(owner="wandb", repo="nb_helpers", token=None):
     print(payload)
     print("=============\n\n")
     at = api.actions.list_workflow_run_artifacts(payload.workflow_run.id)["artifacts"][0]
+    print("HERE IS THE Artifact\n=============")
     print(at)
+    print("=============\n\n")
     at_id = at["id"]
     print("=============\n\n")
     print(f"Downloading AT {at_id}\n")
