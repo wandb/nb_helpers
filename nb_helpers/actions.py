@@ -93,11 +93,11 @@ def download(owner="wandb", repo="nb_helpers", token=None):
     at_id = at["id"]
     print("=============\n\n")
     print(f"Downloading AT {at_id}\n")
-    zf = api.actions.download_artifact(at_id, ".zip")
+    zf = api.actions.download_artifact(at_id, "zip")
     print(f"Extracting reply.json\n")
     open_zip(zf)
 
-# %% ../nbs/03_actions.ipynb 20
+# %% ../nbs/03_actions.ipynb 19
 def update_comment(issue, body, comment_id, owner="wandb", repo="nb_helpers", token=None):
     api, payload = get_api(owner, repo, token)
     
@@ -113,7 +113,7 @@ def update_comment(issue, body, comment_id, owner="wandb", repo="nb_helpers", to
         print(f">> Creating comment on PR #{issue}\n{body}\n")
         api.issues.create_comment(issue_number=issue, body=body)
 
-# %% ../nbs/03_actions.ipynb 21
+# %% ../nbs/03_actions.ipynb 20
 def create_issue_nb_fail(fname, traceback=None, owner="wandb", repo="nb_helpers", token=None):
     "Creates issue of failing nb"
     print("="*75)
