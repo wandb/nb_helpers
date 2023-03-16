@@ -50,7 +50,7 @@ def upload_modified_nbs(owner="wandb", repo="nb_helpers", token=None):
     # filter nbs
     nb_files = [f for f in pr_files if is_nb(f)]
 
-    title = "The following colabs where changed"
+    title = "The following colabs were changed"
 
     def _get_comment_id(issue):
         comments = api.issues.list_comments(issue)
