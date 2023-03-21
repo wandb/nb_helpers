@@ -1,9 +1,9 @@
 package:
   name: nb_helpers
-  version: 0.3.4
+  version: 0.3.7
 source:
-  sha256: 8294e7f325bdc57c96320340127a96c606784d3176a2617b5b40635ee733e57c
-  url: https://files.pythonhosted.org/packages/3a/89/69e70cfc128cf9682d49ebe901f8c9060840a73f34cc7456e4a99b54c1a5/nb_helpers-0.3.4.tar.gz
+  sha256: 7b4c081262644205ae79eb51dce4c51fa5c3d520ef657c5829950ea6afcf18b1
+  url: https://files.pythonhosted.org/packages/34/df/e597b9b10119b1e44d92cf892a42413fb4fd9b8cfe1fad2bafad2167ddd0/nb_helpers-0.3.7.tar.gz
 about:
   description: "![CI](https://github.com/wandb/nb_helpers/workflows/CI/badge.svg)\n\
     [![PyPI](https://img.shields.io/pypi/v/nb-helpers?color=blue&label=pypi%20version)](https://pypi.org/project/nb_helpers/#description)\n\
@@ -159,7 +159,7 @@ requirements:
   - rich
   - fastcore
   - ipython
-  - execnb<=0.1.3
+  - execnb==0.1.2
   - ghapi
   - GitPython
   run:
@@ -169,7 +169,7 @@ requirements:
   - rich
   - fastcore
   - ipython
-  - execnb<=0.1.3
+  - execnb==0.1.2
   - ghapi
   - GitPython
 test:

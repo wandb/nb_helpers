@@ -1,7 +1,7 @@
 name: Reply PR
 on: 
   workflow_run:
-    workflows: ["Open in Colab"]
+    workflows: ["Upload Notebook List"]
     types:
       - completed
 defaults:
