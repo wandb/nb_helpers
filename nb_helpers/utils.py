@@ -184,7 +184,7 @@ class RichLogger:
 # %% ../nbs/02_utils.ipynb 22
 def is_nb(fname: Path):
     "filter files that are jupyter notebooks"
-    return (fname.suffix == ".ipynb") and (not fname.name.startswith("_")) and (not "checkpoint" in str(fname))
+    return (fname.suffix == ".ipynb") and (not fname.name.startswith("_")) and (not "checkpoint" in str(fname))  and (not fname.is_symlink())
 
 # %% ../nbs/02_utils.ipynb 24
 def find_nbs(path: Path):
