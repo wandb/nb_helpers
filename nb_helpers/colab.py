@@ -67,16 +67,18 @@ def add_colab_badge(notebook, fname, branch=None, idx=0, meta=_badge_meta, track
 
 # %% ../nbs/00_colab.ipynb 23
 _colab_meta = {
-    "colab": {"include_colab_link": True, 
-              "toc_visible": True,
-              "provenance": []},
+    "colab": {
+        "include_colab_link": True, 
+        "toc_visible": True,
+        "provenance": []
+        },
     "kernelspec": {
       "name": "python3",
       "display_name": "Python 3"
-    },
+      },
     "language_info": {
       "name": "python"
-    },
+      },
     "accelerator": "GPU",
     "gpuClass": "standard"
     }
