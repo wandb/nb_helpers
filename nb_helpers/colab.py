@@ -65,14 +65,29 @@ def add_colab_badge(notebook, fname, branch=None, idx=0, meta=_badge_meta, track
     notebook["cells"].insert(idx, colab_cell)
     return notebook
 
-# %% ../nbs/00_colab.ipynb 21
+# %% ../nbs/00_colab.ipynb 23
 _colab_meta = {
+    "colab": {
+        "include_colab_link": True, 
+        "toc_visible": True,
+        "provenance": []
+        },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+      },
+    "language_info": {
+      "name": "python"
+      },
     "accelerator": "GPU",
-    "colab": {"include_colab_link": True, "toc_visible": True},
-}
+    "gpuClass": "standard"
+    }
 
-# %% ../nbs/00_colab.ipynb 22
+
+# %% ../nbs/00_colab.ipynb 24
 def add_colab_metadata(notebook, meta=_colab_meta):
     "Adds GPU and colab meta to `notebook`"
+    if "accelerator" in notebook: # old colaboratory standard
+        del notebook["accelerator"]
     notebook["metadata"].update(_colab_meta)
     return notebook

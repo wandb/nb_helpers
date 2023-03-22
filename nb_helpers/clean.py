@@ -62,7 +62,7 @@ def clean_cell_output(cell):
 cell_metadata_keep = ["hide_input"]
 
 # %% ../nbs/04_clean.ipynb 14
-nb_metadata_keep = ["kernelspec", "jekyll", "jupytext", "doc"]
+nb_metadata_keep = ["kernelspec", "accelerator", "colab"]
 
 # %% ../nbs/04_clean.ipynb 15
 def clean_cell(cell, clear_all=False):

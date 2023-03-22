@@ -1,4 +1,4 @@
-name: CI
+name: nbdev Test Notebooks
 on:  [workflow_dispatch, pull_request, push]
 
 jobs:

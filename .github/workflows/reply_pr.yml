@@ -1,19 +1,26 @@
-name: Reply PR
+name: Download Notebooks and Reply PR
+
+# read-write repo token
+# access to secrets
 on: 
   workflow_run:
-    workflows: ["Open in Colab"]
+    workflows: ["Upload Modified Notebook List"]
     types:
       - completed
 defaults:
   run: { shell: bash }
 jobs:
-  build:
+  download_payload:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
       with:
-        python-version: '3.8'
+        fetch-depth: 0
+    - uses: actions/setup-python@v3
+      with:
+        python-version: 3.9
+        cache: "pip"
+        cache-dependency-path: settings.ini
     - name: Run script
       env:
         CONTEXT_GITHUB: ${{ toJson(github) }}
