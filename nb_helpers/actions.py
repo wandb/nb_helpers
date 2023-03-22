@@ -95,12 +95,15 @@ def download(owner="wandb", repo="nb_helpers", token=None):
     print("=============\n\n")
     print(f"Downloading AT {at_id}\n")
     zf = api.actions.download_artifact(at_id, "zip")
-    print(f"Extracting reply.json\n")
+    print(f"Extracting reply.json: {at_id}")
     unzipped_file = open_zip(zf)
     print(unzipped_file, type(unzipped_file))
+    line = unzipped_file.readline()
+    f_dict = json.loads(line)
+    print(f"Content of reply.json: {f_dict}")
     print("Finished")
 
-# %% ../nbs/03_actions.ipynb 19
+# %% ../nbs/03_actions.ipynb 21
 def post_colab_links(owner="wandb", repo="nb_helpers", token=None):
     "Get artifact with text and create comment"
     api, payload = get_api(owner, repo, token)
@@ -126,7 +129,7 @@ def post_colab_links(owner="wandb", repo="nb_helpers", token=None):
         print(f">> Creating comment on PR #{issue}\n{body}\n")
         api.issues.create_comment(issue_number=issue, body=body)
 
-# %% ../nbs/03_actions.ipynb 21
+# %% ../nbs/03_actions.ipynb 22
 def update_comment(issue, body, comment_id, owner="wandb", repo="nb_helpers", token=None):
     api, payload = get_api(owner, repo, token)
     
@@ -142,7 +145,7 @@ def update_comment(issue, body, comment_id, owner="wandb", repo="nb_helpers", to
         print(f">> Creating comment on PR #{issue}\n{body}\n")
         api.issues.create_comment(issue_number=issue, body=body)
 
-# %% ../nbs/03_actions.ipynb 22
+# %% ../nbs/03_actions.ipynb 23
 def create_issue_nb_fail(fname, traceback=None, owner="wandb", repo="nb_helpers", token=None):
     "Creates issue of failing nb"
     print("="*75)
