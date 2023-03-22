@@ -1,4 +1,4 @@
-name: Upload2
+name: Upload
 
 on: [workflow_dispatch, push]
 defaults:
