@@ -33,7 +33,7 @@ def get_api(owner="wandb", repo="nb_helpers", token=None):
     return api, payload
 
 # %% ../nbs/03_actions.ipynb 14
-def upload_modified_nbs(owner="wandb", repo="nb_helpers", token=None):
+def upload_modified_nbs(owner="wandb", repo="nb_helpers", token=None, pr_message=None):
     "On PR post a comment with links to open in colab for each changed nb"
     api, payload = get_api(owner, repo, token)
 
@@ -50,7 +50,13 @@ def upload_modified_nbs(owner="wandb", repo="nb_helpers", token=None):
     # filter nbs
     nb_files = [f for f in pr_files if is_nb(f)]
 
-    title = "The following colabs were changed"
+    if pr_message is not None:
+        with open(pr_message) as pre_title:
+            pre_title_md = pre_title.read() + "\n"
+    else:
+        pre_title_md = ""
+
+    title = pre_title_md + "The following colabs were changed"
 
     def _get_comment_id(issue):
         comments = api.issues.list_comments(issue)
