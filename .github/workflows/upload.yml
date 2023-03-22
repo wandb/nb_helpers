@@ -1,6 +1,6 @@
 name: Upload
 
-on: [workflow_dispatch, push]
+on: [workflow_dispatch]
 defaults:
   run: { shell: bash }
 jobs:
