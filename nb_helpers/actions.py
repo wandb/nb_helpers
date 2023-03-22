@@ -119,7 +119,7 @@ def download_payload(owner="wandb", repo="nb_helpers", token=None):
     print(f"Downloading AT {at_id}\n")
     zf = api.actions.download_artifact(at_id, "zip")
     print(f"Extracting reply.json\n")
-    f = open_zip(zf)
+    f = open_zip(zf, file="modified_colabs.json")
     return json.loads(f.readline())
 
 # %% ../nbs/03_actions.ipynb 24
