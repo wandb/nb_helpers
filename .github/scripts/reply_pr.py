@@ -1,3 +1,3 @@
-from nb_helpers.actions import after_pr_colab_link
+from nb_helpers.actions import post_colab_links
 
-after_pr_colab_link("tcapelle", "nb_helpers")
+post_colab_links("tcapelle", "nb_helpers")
