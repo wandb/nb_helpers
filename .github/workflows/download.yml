@@ -21,8 +21,6 @@ jobs:
         python-version: 3.9
         cache: "pip"
         cache-dependency-path: settings.ini
-      with:
-        python-version: '3.8'
     - name: Run script
       env:
         CONTEXT_GITHUB: ${{ toJson(github) }}
