@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['get_colab_url2md', 'create_comment_body', 'get_api', 'upload_modified_nbs', 'open_zip', 'upload_at', 'download',
-           'post_colab_links', 'update_comment', 'create_issue_nb_fail']
+           'download_payload', 'post_colab_links', 'update_comment', 'create_issue_nb_fail']
 
 # %% ../nbs/03_actions.ipynb 3
 import json
@@ -103,8 +103,8 @@ def download(owner="wandb", repo="nb_helpers", token=None):
     print(f"Content of reply.json: {f_dict}")
     print("Finished")
 
-# %% ../nbs/03_actions.ipynb 21
-def post_colab_links(owner="wandb", repo="nb_helpers", token=None):
+# %% ../nbs/03_actions.ipynb 22
+def download_payload(owner="wandb", repo="nb_helpers", token=None):
     "Get artifact with text and create comment"
     api, payload = get_api(owner, repo, token)
     print("HERE IS THE PAYLOAD\n=============")
@@ -120,16 +120,21 @@ def post_colab_links(owner="wandb", repo="nb_helpers", token=None):
     zf = api.actions.download_artifact(at_id, "zip")
     print(f"Extracting reply.json\n")
     f = open_zip(zf)
-    message = json.loads(f.readline())
+    return json.loads(f.readline())
+
+# %% ../nbs/03_actions.ipynb 24
+def post_colab_links(owner="wandb", repo="nb_helpers", token=None):
+    api, _ = get_api(owner, repo, token)
+    message = download_payload(owner, repo, token)
     pr, comment_id, body = message["pr"], message["comment_id"], message["body"]
     if comment_id > 0:
-        print(f">> Updating comment on PR #{issue}\n{body}\n")
+        print(f">> Updating comment on PR #{pr}\n{body}\n")
         api.issues.update_comment(comment_id, body)
     else:
-        print(f">> Creating comment on PR #{issue}\n{body}\n")
-        api.issues.create_comment(issue_number=issue, body=body)
+        print(f">> Creating comment on PR #{pr}\n{body}\n")
+        api.issues.create_comment(issue_number=pr, body=body)
 
-# %% ../nbs/03_actions.ipynb 22
+# %% ../nbs/03_actions.ipynb 25
 def update_comment(issue, body, comment_id, owner="wandb", repo="nb_helpers", token=None):
     api, payload = get_api(owner, repo, token)
     
@@ -145,7 +150,7 @@ def update_comment(issue, body, comment_id, owner="wandb", repo="nb_helpers", to
         print(f">> Creating comment on PR #{issue}\n{body}\n")
         api.issues.create_comment(issue_number=issue, body=body)
 
-# %% ../nbs/03_actions.ipynb 23
+# %% ../nbs/03_actions.ipynb 27
 def create_issue_nb_fail(fname, traceback=None, owner="wandb", repo="nb_helpers", token=None):
     "Creates issue of failing nb"
     print("="*75)
