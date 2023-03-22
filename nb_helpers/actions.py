@@ -96,8 +96,9 @@ def download(owner="wandb", repo="nb_helpers", token=None):
     print(f"Downloading AT {at_id}\n")
     zf = api.actions.download_artifact(at_id, "zip")
     print(f"Extracting reply.json\n")
-    lines = open_zip(zf).readlines()
-    print(lines)
+    unzipped_file = open_zip(zf)
+    print(unzipped_file, type(unzipped_file))
+    print("Finished")
 
 # %% ../nbs/03_actions.ipynb 19
 def post_colab_links(owner="wandb", repo="nb_helpers", token=None):
