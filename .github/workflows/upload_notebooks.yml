@@ -1,4 +1,4 @@
-name: Upload Modified Notebook List
+name: Get Colabs
 on: [workflow_dispatch, pull_request]
 defaults:
   run: { shell: bash }
@@ -12,15 +12,12 @@ jobs:
     - uses: actions/setup-python@v3
       with:
         python-version: 3.9
-        cache: "pip"
-        cache-dependency-path: settings.ini
     - name: Run script
       env:
         CONTEXT_GITHUB: ${{ toJson(github) }}
       run: |
-        pip install -Uq ghapi
-        pip install -e .
-        python .github/scripts/upload_notebooks.py
+        pip install -Uq ghapi nb_helpers
+        python .github/scripts/upload.py
     - uses: actions/upload-artifact@v3
       with:
         name: pr_comment
