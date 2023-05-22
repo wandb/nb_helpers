@@ -35,8 +35,10 @@ def get_wandb_tracker(nb):
     "Get the value inside <!--- @wandbcode{tracker} -->"
     for cell in nb["cells"]:
         if "@wandbcode" in cell["source"]:
-            tracker_id = re.search(r"@wandbcode{(.*?)}", cell["source"]).group(1)
-            return tracker_id.split(",")[0]
+            match = re.search(r"@wandbcode{(.*?)}", cell["source"])
+            if match is not None:
+                tracker_id = match.group(1)  
+                return tracker_id.split(",")[0]
     return ""
 
 # %% ../nbs/01_wandb.ipynb 9
@@ -69,6 +71,7 @@ def summary_nbs(
     branch = git_main_name(repo_path)
 
     for nb_path in files:
+        print(nb_path)
         nb = read_nb(nb_path)
         tracker_id = get_wandb_tracker(nb)
         fname = nb_path.name if not full_path else nb_path.relative_to(repo_path)
