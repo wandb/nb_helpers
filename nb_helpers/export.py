@@ -62,7 +62,7 @@ def export(
     outfile: Param("An output file to save") = None,
 ):
     if is_nb(path):
-        nb = read_nb(path)
+        notebook = read_nb(path)
     else:
         raise Error(f"This {path} is not a notebook!")
     
