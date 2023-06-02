@@ -1,0 +1,5 @@
+2023-05-22 18:40:31,095 - rich - ERROR - An Error!
+2023-05-22 18:40:31,399 - rich - ERROR - Error in test_data/fail_nb.ipynb:can only concatenate str (not "int") to str
+2023-05-22 18:40:31,437 - rich - ERROR - Error in /Users/tcapelle/work/nb_helpers/nbs/test_data/fail_nb.ipynb:can only concatenate str (not "int") to str
+2023-05-30 22:35:07,375 - rich - ERROR - An Error!
+2023-05-30 23:31:41,140 - rich - ERROR - An Error!
