@@ -5,7 +5,7 @@ __all__ = ['LOGFORMAT', 'LOGFORMAT_RICH', 'STATUS', 'CellType', 'create_table', 
            'is_nb', 'load_list_from_file', 'load_notebooks_from_file', 'find_nbs', 'print_output', 'search_cell',
            'search_cells', 'search_string_in_nb', 'extract_libs', 'detect_imported_libs', 'get_repo',
            'git_current_branch', 'git_branches', 'git_main_name', 'git_origin_repo', 'git_local_repo',
-           'git_last_commit', 'today']
+           'git_last_commit', 'github_url', 'today']
 
 # %% ../nbs/02_utils.ipynb 3
 import io, json, sys, re, csv, logging
@@ -313,7 +313,7 @@ def git_main_name(fname) -> str:
     branches = git_branches(repo)
     return "main" if "main" in branches else "master"
 
-# %% ../nbs/02_utils.ipynb 60
+# %% ../nbs/02_utils.ipynb 62
 def _get_github_repo_remote(repo_url):
     if "git@" in repo_url:
         github_repo = re.search(r".com:(.*).git", repo_url).group(1)
@@ -321,7 +321,7 @@ def _get_github_repo_remote(repo_url):
         github_repo = re.search(r".com/(.*)", repo_url).group(1)
     return github_repo
 
-# %% ../nbs/02_utils.ipynb 62
+# %% ../nbs/02_utils.ipynb 64
 def git_origin_repo(fname):
     "Get github repo name from `fname`"
     repo = get_repo(fname)
@@ -333,19 +333,28 @@ def git_origin_repo(fname):
     else:
         raise Exception(f"Not in a valid github repo: {fname=}")
 
-# %% ../nbs/02_utils.ipynb 64
+# %% ../nbs/02_utils.ipynb 66
 def git_local_repo(fname):
     "Get local github repo path"
     repo = get_repo(fname)
     return Path(repo.git_dir).parent.resolve()
 
-# %% ../nbs/02_utils.ipynb 66
+# %% ../nbs/02_utils.ipynb 68
 def git_last_commit(fname):
     "Gets the last commit on fname"
     repo = get_repo(fname)
     return repo.commit().hexsha
 
-# %% ../nbs/02_utils.ipynb 69
+# %% ../nbs/02_utils.ipynb 70
+def github_url(fname, branch=None):
+    "Get corresponding github URL"
+    fname = fname.resolve()
+    branch = ifnone(branch, git_main_name(fname))
+    repo = git_origin_repo(fname)
+    fname = fname.relative_to(git_local_repo(fname))
+    return f"https://github.com/{repo}/blob/{branch}/{str(fname)}"
+
+# %% ../nbs/02_utils.ipynb 73
 def today():
     "datetime object containing current date and time"
     now = datetime.now()
