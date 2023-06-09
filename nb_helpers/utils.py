@@ -319,6 +319,8 @@ def _get_github_repo_remote(repo_url):
         github_repo = re.search(r".com:(.*).git", repo_url).group(1)
     else:
         github_repo = re.search(r".com/(.*)", repo_url).group(1)
+        if github_repo.endswith(".git"):
+            github_repo = github_repo[:-4]
     return github_repo
 
 # %% ../nbs/02_utils.ipynb 64
