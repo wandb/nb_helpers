@@ -123,6 +123,7 @@ def export_nbs(
 ):
     path = Path(path)
     files = find_nbs(path)
+    outpath = Path(outpath)
     
     for nb_path in files:
         if not is_nb(nb_path):
