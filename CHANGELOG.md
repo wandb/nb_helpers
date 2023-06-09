@@ -1,7 +1,11 @@
 # Release notes
-Add better export to markdown, adding the link to source code
-
+Export to folder instead of src (clean up)
 <!-- do not remove -->
+
+## 0.6.1
+
+
+
 
 ## 0.6.0
 
