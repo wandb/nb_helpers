@@ -59,7 +59,7 @@ def colab_github_url(file):
     colab_url = get_colab_url(file, branch="master")
 
     return (
-        f'[![Run in Google Colab](https://www.tensorflow.org/images/colab_logo_32px.png)]({colab_url}) [Run in Google Colab]({colab_url})'
+        f'\n\n[![Run in Google Colab](https://www.tensorflow.org/images/colab_logo_32px.png)]({colab_url}) [Run in Google Colab]({colab_url})'
         ' &nbsp; '
         f'[![View source on GitHub](https://www.tensorflow.org/images/GitHub-Mark-32px.png)]({gh_url}) [View source on GitHub]({gh_url})'
         '\n\n'
