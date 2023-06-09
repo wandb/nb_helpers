@@ -1,6 +1,11 @@
 # Release notes
-Export to folder instead of src (clean up)
+Fix .git trailing in remote 
 <!-- do not remove -->
+
+## 0.6.2
+
+
+
 
 ## 0.6.1
 
