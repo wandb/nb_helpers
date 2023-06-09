@@ -3,8 +3,7 @@
 #| default_exp colab
 ```
 
-
-[**Try in a Colab Notebook here →**](https://colab.research.google.com/github/wandb/nb_helpers/blob/master/nbs/00_colab.ipynb)
+[![Run in Google Colab](https://www.tensorflow.org/images/colab_logo_32px.png)](https://colab.research.google.com/github/wandb/nb_helpers/blob/master/nbs/00_colab.ipynb) [Run in Google Colab](https://colab.research.google.com/github/wandb/nb_helpers/blob/master/nbs/00_colab.ipynb) &nbsp; [![View source on GitHub](https://www.tensorflow.org/images/GitHub-Mark-32px.png)](https://github.com/wandb/nb_helpers/blob/main/nbs/00_colab.ipynb) [View source on GitHub](https://github.com/wandb/nb_helpers/blob/main/nbs/00_colab.ipynb)
 
 # Google Colab utils
 > Deal with colab specific format

@@ -1,16 +1,6 @@
 # 🏃‍♀️ Quickstart
 Use **[Weights & Biases](https://wandb.ai/site?utm_source=intro_colab&utm_medium=code&utm_campaign=intro)** for machine learning experiment tracking, model checkpointing, and collaboration with your team. See the full Weights & Biases Documentation **[here](https://docs.wandb.ai/quickstart)**
-
-    
-<table class="tfo-notebook-buttons" align="left">
-  <td>
-    <a target="_blank" href="https://colab.research.google.com/github/wandb/nb_helpers/blob/master/nbs/test_data/intro_wandb.ipynb"><img src="https://www.tensorflow.org/images/colab_logo_32px.png" />Run in Google Colab</a>
-  </td>
-  <td>
-    <a target="_blank" href="<function github_url at 0x11322a710>"><img src="https://www.tensorflow.org/images/GitHub-Mark-32px.png" />View source on GitHub</a>
-  </td>
-</table>
-
+[![Run in Google Colab](https://www.tensorflow.org/images/colab_logo_32px.png)](https://colab.research.google.com/github/wandb/nb_helpers/blob/master/nbs/test_data/intro_wandb.ipynb) [Run in Google Colab](https://colab.research.google.com/github/wandb/nb_helpers/blob/master/nbs/test_data/intro_wandb.ipynb) &nbsp; [![View source on GitHub](https://www.tensorflow.org/images/GitHub-Mark-32px.png)](https://github.com/wandb/nb_helpers/blob/main/nbs/test_data/intro_wandb.ipynb) [View source on GitHub](https://github.com/wandb/nb_helpers/blob/main/nbs/test_data/intro_wandb.ipynb)
 
 ## 🤩 A shared dashboard for your experiments
 

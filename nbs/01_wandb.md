@@ -3,8 +3,7 @@
 #| default_exp wandb
 ```
 
-
-[**Try in a Colab Notebook here →**](https://colab.research.google.com/github/wandb/nb_helpers/blob/master/nbs/01_wandb.ipynb)
+[![Run in Google Colab](https://www.tensorflow.org/images/colab_logo_32px.png)](https://colab.research.google.com/github/wandb/nb_helpers/blob/master/nbs/01_wandb.ipynb) [Run in Google Colab](https://colab.research.google.com/github/wandb/nb_helpers/blob/master/nbs/01_wandb.ipynb) &nbsp; [![View source on GitHub](https://www.tensorflow.org/images/GitHub-Mark-32px.png)](https://github.com/wandb/nb_helpers/blob/main/nbs/01_wandb.ipynb) [View source on GitHub](https://github.com/wandb/nb_helpers/blob/main/nbs/01_wandb.ipynb)
 
 # Weights and Biases specifics
 > To deal with wandb specific usage for our examples repo https://github.com/wandb/examples
