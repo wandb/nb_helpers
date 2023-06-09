@@ -1,6 +1,12 @@
 # Release notes
+Add better export to markdown, adding the link to source code
 
 <!-- do not remove -->
+
+## 0.6.0
+
+
+
 
 ## 0.5.3
 

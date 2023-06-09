@@ -3,3 +3,4 @@
 2023-05-22 18:40:31,437 - rich - ERROR - Error in /Users/tcapelle/work/nb_helpers/nbs/test_data/fail_nb.ipynb:can only concatenate str (not "int") to str
 2023-05-30 22:35:07,375 - rich - ERROR - An Error!
 2023-05-30 23:31:41,140 - rich - ERROR - An Error!
+2023-06-09 12:25:51,459 - rich - ERROR - An Error!
