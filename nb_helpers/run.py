@@ -86,16 +86,18 @@ def run_one(
     # check if notebooks has to be runned
     skip = skip_nb(notebook, lib_name)
 
+    traceback = None
     if skip or no_run:
-        return "skip", 0
+        return "skip", 0, traceback
     else:
         did_run, shell = exec_nb(fname, pip_install=pip_install)
     if shell.exc:
         print(shell.prettytb(fname))
+        traceback = shell.prettytb(fname, simple=True) # without colors
         logger.error(f"Error in {fname}:{shell.exc[1]}")
         if github_issue:
-            create_issue_nb_fail(fname, shell.prettytb(fname, simple=True), repo=repo, owner=owner)
-    return "ok" if did_run else "fail", time.time() - exec_time
+            create_issue_nb_fail(fname, traceback, repo=repo, owner=owner)
+    return "ok" if did_run else "fail", time.time() - exec_time, traceback
 
 # %% ../nbs/05_run.ipynb 14
 @call_parse
@@ -120,7 +122,7 @@ def run_nbs(
         task_run_nbs = progress.add_task("Running nbs...", total=len(files))
         for fname in files:
             progress.update(task_run_nbs, description=f"Running nb: {str(fname.relative_to(fname.parent.parent))}")
-            (run_status, runtime) = run_one(
+            (run_status, runtime, tb) = run_one(
                 fname,
                 lib_name=lib_name,
                 no_run=no_run,
