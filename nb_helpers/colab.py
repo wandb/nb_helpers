@@ -46,7 +46,7 @@ def has_colab_badge(nb):
             return i
     return -1
 
-# %% ../nbs/00_colab.ipynb 14
+# %% ../nbs/00_colab.ipynb 16
 def create_colab_badge_cell(fname, branch=None, meta={}, tracker=None):
     "Create a colab badge cell from `fname`"
     # get main/master name
@@ -55,7 +55,7 @@ def create_colab_badge_cell(fname, branch=None, meta={}, tracker=None):
     colab_cell = _create_colab_cell(url, meta, tracker)
     return colab_cell
 
-# %% ../nbs/00_colab.ipynb 16
+# %% ../nbs/00_colab.ipynb 18
 def add_colab_badge(notebook, fname, branch=None, idx=0, meta=_badge_meta, tracker=None):
     "Add a badge to Open In Colab in the `idx` cell"
     idx_colab_badge = has_colab_badge(notebook)
@@ -65,7 +65,7 @@ def add_colab_badge(notebook, fname, branch=None, idx=0, meta=_badge_meta, track
     notebook["cells"].insert(idx, colab_cell)
     return notebook
 
-# %% ../nbs/00_colab.ipynb 23
+# %% ../nbs/00_colab.ipynb 25
 _colab_meta = {
     "colab": {
         "include_colab_link": True, 
@@ -84,7 +84,7 @@ _colab_meta = {
     }
 
 
-# %% ../nbs/00_colab.ipynb 24
+# %% ../nbs/00_colab.ipynb 26
 def add_colab_metadata(notebook, meta=_colab_meta):
     "Adds GPU and colab meta to `notebook`"
     if "accelerator" in notebook: # old colaboratory standard
