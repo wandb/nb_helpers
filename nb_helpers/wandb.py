@@ -22,7 +22,7 @@ from nb_helpers.utils import (
     git_local_repo,
 )
 from .clean import clean_nb, clean_one
-from .colab import add_colab_badge, add_colab_metadata, get_colab_url, has_colab_badge
+from .colab import add_colab_badge, add_colab_metadata, get_colab_url, has_colab_badge, remove_empty_cells
 
 # %% ../nbs/01_wandb.ipynb 5
 WANDB_FEATURES = "Table,sweep,WandbCallback,WandbLogger,Artifact"
@@ -112,6 +112,7 @@ def fix_nbs(
             tracker = f"<!--- @wandbcode{{{tracker}}} -->"
         nb = add_colab_badge(nb, nb_path, branch=branch, idx=colab_cell_idx, tracker=tracker)
         add_colab_metadata(nb)
+        nb = remove_empty_cells(nb)
         clean_nb(nb)
         write_nb(nb, nb_path)
 
